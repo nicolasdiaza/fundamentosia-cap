@@ -1,0 +1,1155 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>IA en mi proceso — Plantilla de Capacitación</title>
+
+<!-- Drag & drop -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.css" />
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
+<!-- Exportar a PDF -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+<style>
+  :root {
+    --bg: #0f172a;
+    --panel: #ffffff;
+    --panel-2: #f8fafc;
+    --border: #e2e8f0;
+    --text: #0f172a;
+    --muted: #64748b;
+    --primary: #2563eb;
+    --primary-dark: #1d4ed8;
+    --primary-soft: #dbeafe;
+    --success: #16a34a;
+    --warning: #d97706;
+    --danger: #dc2626;
+    --azure: #0078d4;
+    --azure-soft: #e6f2fb;
+    --shadow: 0 1px 3px rgba(15, 23, 42, .08), 0 4px 16px rgba(15, 23, 42, .04);
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background: linear-gradient(180deg, #f1f5f9 0%, #e2e8f0 100%);
+    color: var(--text);
+    line-height: 1.55;
+    min-height: 100vh;
+  }
+
+  /* ---------- Header ---------- */
+  header.app-header {
+    background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
+    color: #fff;
+    padding: 22px 32px 22px;
+    box-shadow: 0 2px 12px rgba(0,0,0,.15);
+  }
+  header.app-header .title-row {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    align-items: center;
+    justify-content: space-between;
+  }
+  header.app-header .brand {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    min-width: 0;
+  }
+  header.app-header .logo {
+    height: 40px;
+    width: auto;
+    flex-shrink: 0;
+    color: #ffffff; /* controla el fill via currentColor del SVG inline */
+  }
+  header.app-header .title-text { min-width: 0; }
+  header.app-header h1 {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: -.01em;
+  }
+  header.app-header .subtitle {
+    margin: 3px 0 0;
+    font-size: 13px;
+    color: #cbd5e1;
+  }
+  .header-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  /* ---------- Buttons ---------- */
+  .btn {
+    appearance: none;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    padding: 9px 16px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all .15s ease;
+    background: #fff;
+    color: var(--text);
+    border-color: var(--border);
+  }
+  .btn:hover { background: #f1f5f9; }
+  .btn-primary {
+    background: var(--primary);
+    color: #fff;
+    border-color: var(--primary);
+  }
+  .btn-primary:hover { background: var(--primary-dark); border-color: var(--primary-dark); }
+  .btn-ghost {
+    background: rgba(255,255,255,.1);
+    color: #fff;
+    border-color: rgba(255,255,255,.25);
+  }
+  .btn-ghost:hover { background: rgba(255,255,255,.2); }
+  .btn-danger { color: var(--danger); }
+  .btn-danger:hover { background: #fee2e2; }
+  .btn-sm { padding: 6px 10px; font-size: 13px; }
+
+  /* ---------- Layout ---------- */
+  main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 24px 32px 80px;
+  }
+  .intro {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--primary);
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin-bottom: 24px;
+    box-shadow: var(--shadow);
+  }
+  .intro p { margin: 0; color: var(--muted); font-size: 14px; }
+  .intro strong { color: var(--text); }
+
+  .section {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px 28px;
+    margin-bottom: 20px;
+    box-shadow: var(--shadow);
+  }
+  .section-head {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 18px;
+  }
+  .section-num {
+    background: var(--primary-soft);
+    color: var(--primary-dark);
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    flex-shrink: 0;
+  }
+  .section-head h2 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+  }
+  .section-head p {
+    margin: 2px 0 0;
+    font-size: 13px;
+    color: var(--muted);
+  }
+
+  label.field {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+  .hint { font-size: 12px; color: var(--muted); margin-top: 4px; }
+  input[type="text"],
+  textarea,
+  select {
+    width: 100%;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 14px;
+    font-family: inherit;
+    color: var(--text);
+    background: #fff;
+    transition: border-color .15s, box-shadow .15s;
+  }
+  textarea { resize: vertical; min-height: 90px; }
+  input[type="text"]:focus,
+  textarea:focus,
+  select:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px var(--primary-soft);
+  }
+  .row {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  @media (min-width: 720px) {
+    .row.two { grid-template-columns: 1fr 1fr; }
+  }
+
+  /* ---------- Steps (drag & drop) ---------- */
+  .steps-toolbar {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+  }
+  #steps-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    min-height: 60px;
+  }
+  #steps-list li.step-item {
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 12px 12px 40px;
+    margin-bottom: 8px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  #steps-list li.step-item .grip {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--muted);
+    cursor: grab;
+    font-size: 18px;
+    line-height: 1;
+    user-select: none;
+  }
+  #steps-list li.step-item .grip:active { cursor: grabbing; }
+  #steps-list li.step-item .step-num {
+    background: var(--primary-soft);
+    color: var(--primary-dark);
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 600;
+    flex-shrink: 0;
+  }
+  #steps-list li.step-item input.step-input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    padding: 4px 0;
+    font-size: 14px;
+  }
+  #steps-list li.step-item input.step-input:focus { background: #fff; border-radius: 6px; padding: 6px 8px; }
+  #steps-list li.step-item .remove-step {
+    appearance: none;
+    background: transparent;
+    border: none;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 18px;
+    padding: 4px 8px;
+    border-radius: 6px;
+  }
+  #steps-list li.step-item .remove-step:hover { color: var(--danger); background: #fee2e2; }
+  #steps-list:empty::after {
+    content: "Aún no agregaste pasos. Haz clic en “Agregar paso” para comenzar.";
+    display: block;
+    color: var(--muted);
+    font-size: 13px;
+    text-align: center;
+    padding: 24px;
+    border: 2px dashed var(--border);
+    border-radius: 8px;
+  }
+  .ghost-class { opacity: 0.4; background: var(--primary-soft); }
+  .drag-class { cursor: grabbing; }
+
+  /* ---------- Capacidades de IA ---------- */
+  .ai-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 12px;
+  }
+  .ai-card-cap {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: #fff;
+    transition: all .15s ease;
+    overflow: hidden;
+  }
+  .ai-card-cap:hover {
+    border-color: var(--azure);
+    box-shadow: 0 0 0 3px var(--azure-soft);
+  }
+  .ai-card-cap.selected {
+    border-color: var(--azure);
+    box-shadow: 0 0 0 2px var(--azure);
+  }
+  .ai-cap-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .ai-cap-icon {
+    width: 34px;
+    height: 34px;
+    background: var(--azure-soft);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+  .ai-card-cap.selected .ai-cap-icon {
+    background: var(--azure);
+    color: #fff;
+  }
+  .ai-cap-name {
+    font-weight: 600;
+    font-size: 14.5px;
+    color: var(--text);
+    flex: 1;
+  }
+  .ai-cap-check {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: 2px solid var(--border);
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    color: var(--azure);
+    font-weight: 700;
+    flex-shrink: 0;
+    transition: all .15s;
+  }
+  .ai-card-cap.selected .ai-cap-check {
+    background: var(--azure);
+    border-color: var(--azure);
+    color: #fff;
+  }
+  .ai-cap-desc {
+    padding: 0 14px 14px;
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+  .ai-cap-explain {
+    padding: 0 14px 14px;
+    border-top: 1px dashed var(--border);
+    padding-top: 12px;
+    margin-top: -4px;
+  }
+  .ai-cap-explain[hidden] { display: none; }
+  .ai-cap-explain .field { margin-bottom: 6px; }
+
+  /* ---------- Benefits ---------- */
+  .benefit-block {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 18px;
+    margin-bottom: 12px;
+    background: var(--panel-2);
+  }
+  .benefit-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+  }
+  .benefit-icon {
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    background: var(--primary-soft);
+    color: var(--primary-dark);
+    flex-shrink: 0;
+  }
+  .benefit-title {
+    font-weight: 600;
+    font-size: 15px;
+    flex: 1;
+    min-width: 160px;
+  }
+  .benefit-toggle {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .toggle-switch {
+    position: relative;
+    width: 36px;
+    height: 20px;
+    background: #cbd5e1;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: background .2s;
+  }
+  .toggle-switch::after {
+    content: "";
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 16px;
+    height: 16px;
+    background: #fff;
+    border-radius: 50%;
+    transition: left .2s;
+  }
+  .toggle-switch.on { background: var(--success); }
+  .toggle-switch.on::after { left: 18px; }
+  .benefit-justification {
+    display: none;
+    margin-top: 8px;
+  }
+  .benefit-block.active .benefit-justification { display: block; }
+
+  /* ---------- Data types ---------- */
+  .data-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+  .chip {
+    border: 1px solid var(--border);
+    background: #fff;
+    border-radius: 999px;
+    padding: 8px 14px;
+    font-size: 13px;
+    cursor: pointer;
+    user-select: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all .15s;
+  }
+  .chip:hover { border-color: var(--primary); }
+  .chip.selected {
+    background: var(--primary);
+    color: #fff;
+    border-color: var(--primary);
+  }
+
+  /* ---------- Toast ---------- */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--text);
+    color: #fff;
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-size: 14px;
+    box-shadow: 0 8px 24px rgba(0,0,0,.2);
+    opacity: 0;
+    pointer-events: none;
+    transition: all .25s ease;
+    z-index: 1000;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  .toast.success { background: var(--success); }
+  .toast.error { background: var(--danger); }
+
+  /* ---------- PDF export mode ---------- */
+  .pdf-mode header.app-header { background: #1e3a8a !important; }
+  .pdf-mode .header-actions,
+  .pdf-mode .steps-toolbar .btn,
+  .pdf-mode .remove-step,
+  .pdf-mode .add-data-btn { display: none !important; }
+
+  @media print {
+    body { background: #fff; }
+    .no-print { display: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<header class="app-header">
+  <div class="title-row">
+    <div class="brand">
+      <svg class="logo" viewBox="0 0 582 130" xmlns="http://www.w3.org/2000/svg" aria-label="Softtek" role="img">
+        <g fill="currentColor">
+          <path d="M51.223,19.544c-9.801,0-19.787,5.178-19.787,16.076c0,13.504,12.043,15.068,22.988,17.215c19.008,4.826,46.746,10.199,46.746,35.297c0,30.994-26.719,41.754-53.484,41.754c-28.422,0-48.443-11.084-47.582-42.615h27.035c-1.033,13.842,6.904,23.193,20.787,23.193c10.76,0,24.994-3.262,24.994-16.523c0-14.65-17.877-15.678-28.629-18.43C26.828,71.187,3.193,63.276,3.193,41.241c0-28.465,26.016-41.127,51.658-41.127c24.242,0,42.898,13.16,42.898,38.188l-25.877,0.098C70.844,25.757,64.127,19.544,51.223,19.544L51.223,19.544z"/>
+          <path d="M160.008,129.913c-28.098,0-44.955-18.689-44.955-45.912c0-27.201,16.857-45.891,44.955-45.891c28.131,0,44.988,18.689,44.988,45.891C204.996,111.224,188.139,129.913,160.008,129.913L160.008,129.913z M160.008,112.608c15.752,0,18.303-14.82,18.303-28.607c0-13.766-2.551-28.588-18.303-28.588c-15.727,0-18.305,14.822-18.305,28.588C141.703,97.788,144.281,112.608,160.008,112.608L160.008,112.608z"/>
+          <path d="M245.41,40.571h15.643v17.326H245.41v69.555h-25.807V57.897h-12.926V40.571h12.926c-0.705-24.566,1.545-40.484,29.566-40.484c4.676,0,9.469,0.523,14.111,1.221v16.084C245.045,15.308,244.707,23.585,245.41,40.571L245.41,40.571z"/>
+          <path d="M284.938,23.433l25.807-9.346v26.484h19.422v17.326h-19.422v40.201c0,11.4,1.719,14.51,10.664,14.51c2.744,0,5.488-0.365,8.234-0.537v15.234c-2.91,1.395-16.684,2.607-20.291,2.607c-20.104,0-24.414-10.572-24.414-29.4V57.897h-17.381V40.571h17.381V23.433L284.938,23.433z"/>
+          <path d="M355.285,23.433l25.822-9.346v26.484h19.42v17.326h-19.42v40.201c0,11.4,1.703,14.51,10.648,14.51c2.752,0,5.504-0.365,8.275-0.537v15.234c-2.951,1.395-16.711,2.607-20.318,2.607c-20.117,0-24.428-10.572-24.428-29.4V57.897h-17.373V40.571h17.373V23.433L355.285,23.433z"/>
+          <path d="M432.15,90.954c0,11.158,1.551,21.654,14.918,21.654c9.008,0,13.49-3.268,15.938-11.172h23.229c-2.248,21.373-18.924,28.477-39.166,28.477c-29.713,0-41.588-16.779-41.588-45.697c0-26.057,15.145-46.105,41.588-46.105c16.27,0,29.697,5.545,36.918,20.752c2.408,4.82,3.607,9.98,4.305,15.477c0.689,5.387,0.689,10.896,0.689,16.615H432.15L432.15,90.954z M462.303,73.649c0-9.457-2.6-18.236-15.234-18.236c-11.973,0-14.58,8.779-14.918,18.236H462.303L462.303,73.649z"/>
+          <polygon points="525.838,76.118 551.287,39.64 580.006,39.64 550.26,77.663 581.922,127.452 551.811,127.452 525.838,79.911 525.5,80.271 525.5,127.452 499.684,127.452 499.684,2.55 525.5,2.55 525.5,75.772 525.838,76.118"/>
+        </g>
+      </svg>
+      <div class="title-text">
+        <h1>IA en mi proceso</h1>
+        <p class="subtitle">Plantilla de trabajo · Capacitación de IA</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-ghost" id="btn-save" type="button">💾 Guardar</button>
+      <button class="btn btn-ghost" id="btn-export" type="button">📄 Exportar PDF</button>
+      <button class="btn btn-ghost btn-danger" id="btn-clear" type="button">🗑️ Limpiar</button>
+    </div>
+  </div>
+</header>
+
+<main id="main-content">
+
+  <div class="intro">
+    <p>
+      <strong>Cómo usar esta plantilla:</strong> completa las cuatro secciones describiendo el proceso
+      que te gustaría implementar con IA. Se guarda automáticamente en este navegador. Cuando termines,
+      puedes exportar tu respuesta a un PDF para compartirla o entregarla.
+    </p>
+  </div>
+
+  <!-- ========== SECCIÓN 1 ========== -->
+  <section class="section" id="sec-proceso">
+    <div class="section-head">
+      <div class="section-num">1</div>
+      <div>
+        <h2>¿Qué proceso te gustaría implementar con IA?</h2>
+        <p>Descríbelo con nombre y detalle, y lista los pasos principales. Puedes reordenarlos arrastrándolos.</p>
+      </div>
+    </div>
+
+    <div class="row two">
+      <div>
+        <label class="field" for="proc-nombre">Nombre del proceso</label>
+        <input type="text" id="proc-nombre" placeholder="Ej: Atención de consultas de clientes de primer nivel" />
+      </div>
+      <div>
+        <label class="field" for="proc-area">Área / equipo responsable</label>
+        <input type="text" id="proc-area" placeholder="Ej: Servicio al cliente, RR.HH., Finanzas…" />
+      </div>
+    </div>
+
+    <div style="margin-top: 16px;">
+      <label class="field" for="proc-desc">Descripción general</label>
+      <textarea id="proc-desc" placeholder="Cuéntanos brevemente de qué se trata el proceso, qué problema resuelve hoy, qué actores participan y por qué crees que la IA podría ayudar."></textarea>
+    </div>
+
+    <div style="margin-top: 18px;">
+      <label class="field">Pasos del proceso (arrastra para reordenar)</label>
+      <div class="steps-toolbar">
+        <button class="btn btn-sm" id="add-step" type="button">＋ Agregar paso</button>
+        <button class="btn btn-sm" id="clear-steps" type="button">Vaciar pasos</button>
+      </div>
+      <ul id="steps-list"></ul>
+    </div>
+  </section>
+
+  <!-- ========== SECCIÓN 2 ========== -->
+  <section class="section" id="sec-ia">
+    <div class="section-head">
+      <div class="section-num">2</div>
+      <div>
+        <h2>¿Qué tipo o tipos de IA aplicarías?</h2>
+        <p>Selecciona las capacidades que necesites y explica brevemente cómo se usarían en tu proceso.</p>
+      </div>
+    </div>
+
+    <div class="ai-grid" id="ai-grid"></div>
+  </section>
+
+  <!-- ========== SECCIÓN 3 ========== -->
+  <section class="section" id="sec-datos">
+    <div class="section-head">
+      <div class="section-num">3</div>
+      <div>
+        <h2>¿Qué tipos de datos necesitarías?</h2>
+        <p>Selecciona las fuentes de información que el modelo debería consumir o producir.</p>
+      </div>
+    </div>
+
+    <div class="data-grid" id="data-grid"></div>
+
+    <label class="field" for="data-notas">Comentarios sobre los datos (calidad, volumen, privacidad, frecuencia…)</label>
+    <textarea id="data-notas" placeholder="Ej: Base de ~50.000 tickets históricos anonimizados; documentos PDF de políticas actualizados trimestralmente; no usaríamos datos personales sensibles."></textarea>
+  </section>
+
+  <!-- ========== SECCIÓN 4 ========== -->
+  <section class="section" id="sec-beneficios">
+    <div class="section-head">
+      <div class="section-num">4</div>
+      <div>
+        <h2>¿Qué beneficios esperas obtener?</h2>
+        <p>Activa las categorías que apliquen y justifica brevemente por qué.</p>
+      </div>
+    </div>
+
+    <div id="benefits-list"></div>
+  </section>
+
+  <div style="text-align: center; margin-top: 24px;">
+    <button class="btn btn-primary" id="btn-save-bottom" type="button">💾 Guardar cambios</button>
+  </div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* =========================================================
+   Capacidades de IA (catálogo conceptual para la capacitación)
+   ========================================================= */
+const AI_CAPABILITIES = [
+  { id: "prediccion",  icon: "📊", name: "Predicción de resultados",
+    desc: "Anticipar valores, tendencias o comportamientos futuros a partir de datos históricos." },
+  { id: "imagenes",    icon: "🖼️", name: "Interpretación de imágenes",
+    desc: "Analizar contenido visual: clasificar, describir, detectar objetos, leer texto en imágenes." },
+  { id: "aprendizaje", icon: "🔁", name: "Aprender de la experiencia",
+    desc: "Modelos que mejoran su desempeño con el uso y la retroalimentación (machine learning continuo)." },
+  { id: "anomalias",   icon: "⚠️", name: "Detección de anomalías",
+    desc: "Identificar patrones fuera de lo normal: fraude, fallas, desvíos operativos o de calidad." },
+  { id: "lenguaje",    icon: "💬", name: "Comprensión de lenguajes",
+    desc: "Entender, generar, resumir, traducir o conversar en lenguaje natural (texto o voz)." },
+  { id: "conocimiento",icon: "🧩", name: "Extracción de conocimiento",
+    desc: "Recuperar y estructurar información relevante desde grandes volúmenes de documentos o datos." }
+];
+
+/* =========================================================
+   Tipos de datos
+   ========================================================= */
+const DATA_TYPES = [
+  "Texto (correos, tickets, chats)",
+  "Documentos (PDF, Word, contratos)",
+  "Imágenes y fotos",
+  "Video / cámaras",
+  "Audio / llamadas",
+  "Datos tabulares (Excel, BD)",
+  "Logs de eventos / telemetría",
+  "Datos transaccionales",
+  "Datos de sensores / IoT",
+  "Redes sociales / web pública",
+  "Datos geoespaciales",
+  "Conocimiento interno (manuales, FAQs)"
+];
+
+/* =========================================================
+   Categorías de beneficios
+   ========================================================= */
+const BENEFITS = [
+  { id: "costos",    icon: "💰", title: "Reducción de costos",
+    placeholder: "Ej: estimamos reducir ~30% el tiempo de procesamiento manual de tickets, equivalente a 1,5 FTEs reasignables." },
+  { id: "ingresos",  icon: "📈", title: "Aumento de ingresos",
+    placeholder: "Ej: recomendación de productos personalizados podría subir el ticket promedio un 8% según benchmarks de retail." },
+  { id: "servicio",  icon: "🤝", title: "Mejora en el servicio al cliente",
+    placeholder: "Ej: respuesta 24/7 en menos de 30 segundos, multilingüe, con derivación al humano solo cuando haga falta." },
+  { id: "productividad", icon: "⚡", title: "Productividad / eficiencia operativa",
+    placeholder: "Ej: automatizar clasificación de 5.000 documentos/mes libera al equipo para tareas de mayor valor." },
+  { id: "decisiones", icon: "🧠", title: "Mejora en la toma de decisiones",
+    placeholder: "Ej: tableros con análisis de sentimiento y temas emergentes que hoy no se detectan a tiempo." },
+  { id: "riesgos",   icon: "🛡️", title: "Mitigación de riesgos",
+    placeholder: "Ej: detección temprana de fraude o anomalías en transacciones reduce pérdidas por contracargos." },
+  { id: "cumplimiento", icon: "📋", title: "Cumplimiento normativo",
+    placeholder: "Ej: trazabilidad y redacción automática de datos sensibles en respuestas al cliente (GDPR, ley 25.326)." },
+  { id: "innovacion", icon: "🚀", title: "Innovación / ventaja competitiva",
+    placeholder: "Ej: ofrecer un asistente experto interno nos diferencia frente a competidores del sector." }
+];
+
+/* =========================================================
+   Estado y persistencia
+   ========================================================= */
+const STORAGE_KEY = "capacitacion-ia-respuestas-v1";
+
+const state = {
+  proceso: {
+    nombre: "",
+    area: "",
+    descripcion: "",
+    pasos: []
+  },
+  ia: {
+    items: {} // { id: { active: bool, explicacion: "" } }
+  },
+  datos: {
+    selected: [],
+    notas: ""
+  },
+  beneficios: {} // {id: {active: bool, justificacion: ""}}
+};
+
+function saveState() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    showToast("Cambios guardados", "success");
+  } catch (e) {
+    showToast("No se pudo guardar: " + e.message, "error");
+  }
+}
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return;
+    const saved = JSON.parse(raw);
+    if (saved.proceso) state.proceso = { ...state.proceso, ...saved.proceso };
+    if (saved.ia) {
+      // Migración: si el guardado anterior tiene la forma vieja, lo descartamos
+      if (saved.ia.items) state.ia.items = saved.ia.items;
+    }
+    if (saved.datos) state.datos = { ...state.datos, ...saved.datos };
+    if (saved.beneficios) state.beneficios = saved.beneficios;
+  } catch (e) {
+    console.warn("No se pudo cargar estado:", e);
+  }
+}
+
+/* =========================================================
+   Toast
+   ========================================================= */
+let toastTimer = null;
+function showToast(msg, type) {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.className = "toast show " + (type || "");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.className = "toast " + (type || ""), 2400);
+}
+
+/* =========================================================
+   Render: capacidades de IA
+   ========================================================= */
+function renderAICapabilities() {
+  const grid = document.getElementById("ai-grid");
+  grid.innerHTML = "";
+  AI_CAPABILITIES.forEach(item => {
+    const data = state.ia.items[item.id] || { active: false, explicacion: "" };
+    const card = document.createElement("div");
+    card.className = "ai-card-cap" + (data.active ? " selected" : "");
+    card.dataset.id = item.id;
+    card.innerHTML = `
+      <div class="ai-cap-head" data-toggle="${item.id}">
+        <div class="ai-cap-icon">${item.icon}</div>
+        <div class="ai-cap-name">${item.name}</div>
+        <div class="ai-cap-check" aria-hidden="true">${data.active ? "✓" : ""}</div>
+      </div>
+      <div class="ai-cap-desc">${item.desc}</div>
+      <div class="ai-cap-explain" ${data.active ? "" : "hidden"}>
+        <label class="field">¿Cómo se aplicaría en tu proceso?</label>
+        <textarea data-explain="${item.id}" placeholder="Ej: usaríamos X para poder Y, basándonos en Z datos…">${escapeHtml(data.explicacion)}</textarea>
+      </div>
+    `;
+    grid.appendChild(card);
+  });
+
+  // Toggle al hacer clic en el header
+  grid.querySelectorAll(".ai-cap-head").forEach(h => {
+    h.addEventListener("click", () => toggleAICapability(h.dataset.toggle));
+  });
+  // Inputs de explicación
+  grid.querySelectorAll("textarea[data-explain]").forEach(ta => {
+    ta.addEventListener("input", () => {
+      const id = ta.dataset.explain;
+      if (!state.ia.items[id]) state.ia.items[id] = { active: true, explicacion: "" };
+      state.ia.items[id].explicacion = ta.value;
+    });
+  });
+}
+
+function toggleAICapability(id) {
+  const current = state.ia.items[id] || { active: false, explicacion: "" };
+  current.active = !current.active;
+  if (!current.active) current.explicacion = "";
+  state.ia.items[id] = current;
+  renderAICapabilities();
+}
+
+/* =========================================================
+   Render: tipos de datos
+   ========================================================= */
+function renderDataTypes() {
+  const grid = document.getElementById("data-grid");
+  grid.innerHTML = "";
+  DATA_TYPES.forEach(d => {
+    const sel = state.datos.selected.includes(d);
+    const chip = document.createElement("div");
+    chip.className = "chip" + (sel ? " selected" : "");
+    chip.textContent = (sel ? "✓ " : "") + d;
+    chip.addEventListener("click", () => {
+      const i = state.datos.selected.indexOf(d);
+      if (i >= 0) state.datos.selected.splice(i, 1);
+      else state.datos.selected.push(d);
+      renderDataTypes();
+    });
+    grid.appendChild(chip);
+  });
+}
+
+/* =========================================================
+   Render: beneficios
+   ========================================================= */
+function renderBenefits() {
+  const list = document.getElementById("benefits-list");
+  list.innerHTML = "";
+  BENEFITS.forEach(b => {
+    const data = state.beneficios[b.id] || { active: false, justificacion: "" };
+    const block = document.createElement("div");
+    block.className = "benefit-block" + (data.active ? " active" : "");
+    block.innerHTML = `
+      <div class="benefit-head">
+        <div class="benefit-icon">${b.icon}</div>
+        <div class="benefit-title">${b.title}</div>
+        <label class="benefit-toggle">
+          <span>${data.active ? "Aplica" : "No aplica"}</span>
+          <div class="toggle-switch ${data.active ? "on" : ""}" data-id="${b.id}"></div>
+        </label>
+      </div>
+      <div class="benefit-justification">
+        <label class="field">¿Por qué consideras que aplica?</label>
+        <textarea data-just="${b.id}" placeholder="${b.placeholder}">${data.justificacion || ""}</textarea>
+      </div>
+    `;
+    list.appendChild(block);
+  });
+
+  // Eventos de toggles
+  list.querySelectorAll(".toggle-switch").forEach(sw => {
+    sw.addEventListener("click", () => {
+      const id = sw.dataset.id;
+      const current = state.beneficios[id] || { active: false, justificacion: "" };
+      current.active = !current.active;
+      state.beneficios[id] = current;
+      renderBenefits();
+    });
+  });
+  list.querySelectorAll("textarea[data-just]").forEach(ta => {
+    ta.addEventListener("input", () => {
+      const id = ta.dataset.just;
+      if (!state.beneficios[id]) state.beneficios[id] = { active: true, justificacion: "" };
+      state.beneficios[id].justificacion = ta.value;
+    });
+  });
+}
+
+/* =========================================================
+   Render: pasos
+   ========================================================= */
+let sortable = null;
+function renderSteps() {
+  const list = document.getElementById("steps-list");
+  list.innerHTML = "";
+  state.proceso.pasos.forEach((texto, i) => {
+    const li = document.createElement("li");
+    li.className = "step-item";
+    li.dataset.index = i;
+    li.innerHTML = `
+      <span class="grip" title="Arrastrar para reordenar">⋮⋮</span>
+      <span class="step-num">${i + 1}</span>
+      <input type="text" class="step-input" value="${escapeHtml(texto)}" placeholder="Describe este paso…" />
+      <button class="remove-step" title="Eliminar paso">✕</button>
+    `;
+    list.appendChild(li);
+  });
+
+  // Inputs
+  list.querySelectorAll(".step-input").forEach(inp => {
+    inp.addEventListener("input", () => {
+      const idx = Number(inp.closest(".step-item").dataset.index);
+      state.proceso.pasos[idx] = inp.value;
+    });
+  });
+  // Remove
+  list.querySelectorAll(".remove-step").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const idx = Number(btn.closest(".step-item").dataset.index);
+      state.proceso.pasos.splice(idx, 1);
+      renderSteps();
+    });
+  });
+
+  // Init / reinit sortable
+  if (sortable) sortable.destroy();
+  sortable = Sortable.create(list, {
+    handle: ".grip",
+    animation: 180,
+    ghostClass: "ghost-class",
+    dragClass: "drag-class",
+    onEnd: () => {
+      const items = [...list.querySelectorAll(".step-item")];
+      state.proceso.pasos = items.map(li => li.querySelector(".step-input").value);
+      renderSteps();
+    }
+  });
+}
+
+function escapeHtml(s) {
+  return String(s || "").replace(/[&<>"']/g, c => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+  }[c]));
+}
+
+/* =========================================================
+   Bindings
+   ========================================================= */
+function bindEvents() {
+  // Proceso
+  document.getElementById("proc-nombre").addEventListener("input", e => state.proceso.nombre = e.target.value);
+  document.getElementById("proc-area").addEventListener("input", e => state.proceso.area = e.target.value);
+  document.getElementById("proc-desc").addEventListener("input", e => state.proceso.descripcion = e.target.value);
+
+  // Pasos
+  document.getElementById("add-step").addEventListener("click", () => {
+    state.proceso.pasos.push("");
+    renderSteps();
+    // enfocar el nuevo input
+    setTimeout(() => {
+      const inputs = document.querySelectorAll(".step-input");
+      if (inputs.length) inputs[inputs.length - 1].focus();
+    }, 50);
+  });
+  document.getElementById("clear-steps").addEventListener("click", () => {
+    if (!state.proceso.pasos.length) return;
+    if (confirm("¿Vaciar todos los pasos?")) {
+      state.proceso.pasos = [];
+      renderSteps();
+    }
+  });
+
+  // Búsqueda IA
+  // (sin búsqueda: ahora son 6 capacidades fijas)
+
+  // Datos
+  document.getElementById("data-notas").addEventListener("input", e => state.datos.notas = e.target.value);
+
+  // Acciones globales
+  document.getElementById("btn-save").addEventListener("click", saveState);
+  document.getElementById("btn-save-bottom").addEventListener("click", saveState);
+  document.getElementById("btn-clear").addEventListener("click", () => {
+    if (!confirm("Esto va a borrar TODAS tus respuestas. ¿Continuar?")) return;
+    localStorage.removeItem(STORAGE_KEY);
+    location.reload();
+  });
+  document.getElementById("btn-export").addEventListener("click", exportPDF);
+}
+
+/* =========================================================
+   Hidratar UI desde state
+   ========================================================= */
+function hydrateUI() {
+  document.getElementById("proc-nombre").value = state.proceso.nombre || "";
+  document.getElementById("proc-area").value = state.proceso.area || "";
+  document.getElementById("proc-desc").value = state.proceso.descripcion || "";
+  document.getElementById("data-notas").value = state.datos.notas || "";
+  renderSteps();
+  renderAICapabilities();
+  renderDataTypes();
+  renderBenefits();
+}
+
+/* =========================================================
+   Exportar a PDF
+   ========================================================= */
+function exportPDF() {
+  saveState(); // guarda antes de exportar
+  const main = document.getElementById("main-content");
+  document.body.classList.add("pdf-mode");
+
+  // Construir un clon "limpio" para el PDF
+  const clone = main.cloneNode(true);
+
+  // Reemplazar textarea por divs con el contenido
+  clone.querySelectorAll("textarea").forEach(ta => {
+    const div = document.createElement("div");
+    div.style.whiteSpace = "pre-wrap";
+    div.style.padding = "8px 10px";
+    div.style.background = "#f8fafc";
+    div.style.border = "1px solid #e2e8f0";
+    div.style.borderRadius = "6px";
+    div.style.minHeight = "32px";
+    div.style.fontSize = "13px";
+    div.textContent = ta.value || "—";
+    ta.replaceWith(div);
+  });
+  // Reemplazar inputs de texto por spans
+  clone.querySelectorAll('input[type="text"]').forEach(inp => {
+    const span = document.createElement("div");
+    span.style.padding = "6px 10px";
+    span.style.background = "#f8fafc";
+    span.style.border = "1px solid #e2e8f0";
+    span.style.borderRadius = "6px";
+    span.style.fontSize = "13px";
+    span.textContent = inp.value || "—";
+    inp.replaceWith(span);
+  });
+  // Ocultar grip y remove en pasos
+  clone.querySelectorAll(".grip, .remove-step").forEach(el => el.remove());
+  // Eliminar botones de toolbar de pasos
+  clone.querySelectorAll(".steps-toolbar").forEach(el => el.remove());
+  // Eliminar input de búsqueda IA (ya no existe, pero por las dudas)
+  const aiSearch = clone.querySelector(".ai-search");
+  if (aiSearch) aiSearch.remove();
+
+  // Construir resumen de pasos (numerado)
+  const stepsUl = clone.querySelector("#steps-list");
+  if (stepsUl) {
+    stepsUl.style.minHeight = "0";
+    stepsUl.querySelectorAll(".step-num").forEach((n, i) => n.textContent = (i + 1));
+    stepsUl.querySelectorAll(".step-input").forEach((s) => {
+      const div = document.createElement("div");
+      div.style.flex = "1";
+      div.textContent = s.value || "—";
+      s.replaceWith(div);
+    });
+  }
+
+  // Beneficios: sólo los activos
+  clone.querySelectorAll(".benefit-block").forEach(block => {
+    if (!block.classList.contains("active")) {
+      block.remove();
+    } else {
+      // Ocultar el toggle switch visual
+      const tog = block.querySelector(".toggle-switch");
+      if (tog) tog.remove();
+      const span = block.querySelector(".benefit-toggle span");
+      if (span) span.textContent = "✓ Aplica";
+      const ta = block.querySelector("textarea");
+      if (ta) {
+        const div = document.createElement("div");
+        div.style.padding = "8px 10px";
+        div.style.background = "#fff";
+        div.style.border = "1px solid #e2e8f0";
+        div.style.borderRadius = "6px";
+        div.style.marginTop = "6px";
+        div.style.whiteSpace = "pre-wrap";
+        div.style.fontSize = "13px";
+        div.textContent = ta.value || "—";
+        ta.replaceWith(div);
+      }
+    }
+  });
+
+  // Capacidades de IA: mostrar solo las activas con su explicación
+  clone.querySelectorAll(".ai-card-cap").forEach(card => {
+    if (!card.classList.contains("selected")) {
+      card.remove();
+    } else {
+      // Quitar el check visual del header (ya sabemos que está activa)
+      const check = card.querySelector(".ai-cap-check");
+      if (check) check.textContent = "✓";
+      // Reemplazar el textarea por un div
+      const ta = card.querySelector("textarea[data-explain]");
+      if (ta) {
+        const wrap = document.createElement("div");
+        wrap.style.padding = "8px 10px";
+        wrap.style.background = "#fff";
+        wrap.style.border = "1px solid #e2e8f0";
+        wrap.style.borderRadius = "6px";
+        wrap.style.marginTop = "6px";
+        wrap.style.whiteSpace = "pre-wrap";
+        wrap.style.fontSize = "13px";
+        wrap.textContent = ta.value || "—";
+        ta.parentNode.replaceWith(wrap);
+      }
+      // Quitar el label "field" (ya no tiene sentido en PDF)
+      const lbl = card.querySelector(".ai-cap-explain .field");
+      if (lbl) {
+        const lbl2 = document.createElement("div");
+        lbl2.style.fontSize = "12px";
+        lbl2.style.color = "#1e3a8a";
+        lbl2.style.fontWeight = "600";
+        lbl2.style.marginBottom = "4px";
+        lbl2.textContent = "Cómo se aplicaría:";
+        lbl.replaceWith(lbl2);
+      }
+    }
+  });
+
+  // Chips de datos: sólo seleccionados
+  clone.querySelectorAll("#data-grid .chip").forEach(chip => {
+    if (!chip.classList.contains("selected")) chip.remove();
+  });
+
+  // Crear un contenedor off-screen con estilos de impresión
+  const wrapper = document.createElement("div");
+  wrapper.style.background = "#fff";
+  wrapper.style.color = "#0f172a";
+  wrapper.style.padding = "32px";
+  wrapper.style.fontFamily = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
+  wrapper.style.maxWidth = "800px";
+  wrapper.style.margin = "0 auto";
+  wrapper.innerHTML = `
+    <div style="border-bottom: 2px solid #1e3a8a; padding-bottom: 12px; margin-bottom: 20px;">
+      <h1 style="margin:0; font-size:22px; color:#1e3a8a;">IA en mi proceso</h1>
+      <p style="margin:4px 0 0; color:#64748b; font-size:13px;">Respuesta de capacitación · ${new Date().toLocaleDateString("es-AR", { dateStyle: "long" })}</p>
+    </div>
+  `;
+  wrapper.appendChild(clone);
+
+  // Render
+  const opt = {
+    margin:       [10, 10, 14, 10],
+    filename:     `IA-en-mi-proceso_${(state.proceso.nombre || "sin-titulo").replace(/[^a-z0-9-_]+/gi, "_")}.pdf`,
+    image:        { type: "jpeg", quality: 0.95 },
+    html2canvas:  { scale: 2, useCORS: true, backgroundColor: "#ffffff" },
+    jsPDF:        { unit: "mm", format: "a4", orientation: "portrait" },
+    pagebreak:    { mode: ["avoid-all", "css", "legacy"] }
+  };
+
+  showToast("Generando PDF…");
+  html2pdf().set(opt).from(wrapper).save().then(() => {
+    document.body.classList.remove("pdf-mode");
+    showToast("PDF descargado", "success");
+  }).catch(err => {
+    document.body.classList.remove("pdf-mode");
+    console.error(err);
+    showToast("Error al generar PDF", "error");
+  });
+}
+
+/* =========================================================
+   Init
+   ========================================================= */
+document.addEventListener("DOMContentLoaded", () => {
+  loadState();
+  bindEvents();
+  hydrateUI();
+});
+</script>
+
+</body>
+</html>
