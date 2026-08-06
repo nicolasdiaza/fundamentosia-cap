@@ -1,0 +1,10 @@
+Analiza el documento adjunto que contiene opiniones de usuarios.
+Realiza lo siguiente:
+
+1. Clasifica cada comentario como positivo, negativo o neutral.
+2. Calcula el porcentaje de cada categoría.
+3. Identifica los temas más frecuentes.
+4. Detecta los principales motivos de insatisfacción.
+5. Detecta los principales motivos de satisfacción.
+6. Genera un resumen ejecutivo para la dirección.
+7. Propón cinco acciones de mejora priorizadas.
