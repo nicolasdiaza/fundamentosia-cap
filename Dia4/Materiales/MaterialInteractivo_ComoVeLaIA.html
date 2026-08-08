@@ -1,0 +1,1301 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Cómo ve una red neuronal a un gato — CNN interactiva</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #f7f5f0;
+    --bg-soft: #efece4;
+    --card: #ffffff;
+    --line: #e9e3d6;
+    --line-soft: #f0ebde;
+    --ink: #14171e;
+    --ink-2: #3a4256;
+    --ink-3: #7c7a72;
+    --primary: #c97b3f;        /* warm amber - "cat" */
+    --primary-soft: #e9b58a;
+    --teal: #2f6f5e;           /* deep teal - "tech" */
+    --teal-soft: #8ab5a8;
+    --rose: #b06367;
+    --ink-bg: #1c1f24;
+    --ink-line: #2a2e36;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:'Outfit',sans-serif;font-weight:400;line-height:1.6;-webkit-font-smoothing:antialiased}
+  body{padding-bottom:60px}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 28px}
+
+  /* ---------- typography ---------- */
+  .serif{font-family:'DM Serif Display',serif;font-weight:400;letter-spacing:-0.01em}
+  .mono{font-family:'JetBrains Mono',monospace}
+  h1,h2,h3,h4{font-family:'DM Serif Display',serif;font-weight:400;margin:0;color:var(--ink);letter-spacing:-0.01em}
+  h1{font-size:clamp(36px,5vw,58px);line-height:1.05}
+  h2{font-size:clamp(28px,3.4vw,42px);line-height:1.15}
+  h3{font-size:22px;line-height:1.25}
+  p{margin:0 0 14px;color:var(--ink-2);font-size:16.5px}
+  small{color:var(--ink-3);font-size:13.5px}
+  a{color:var(--primary);text-decoration:none;border-bottom:1px solid currentColor}
+  code{font-family:'JetBrains Mono',monospace;background:var(--bg-soft);padding:1px 6px;border-radius:4px;font-size:13px;color:var(--ink)}
+
+  /* ---------- layout primitives ---------- */
+  section{padding:72px 0;position:relative}
+  section + section{border-top:1px solid var(--line)}
+  .eyebrow{display:inline-flex;align-items:center;gap:8px;font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:0.16em;text-transform:uppercase;color:var(--primary);margin-bottom:18px}
+  .eyebrow .dot{width:6px;height:6px;border-radius:50%;background:var(--primary)}
+  .lead{font-size:19px;color:var(--ink-2);max-width:62ch;margin-bottom:36px}
+
+  /* ---------- HERO ---------- */
+  .hero{padding-top:60px;padding-bottom:80px;position:relative;overflow:hidden}
+  .hero::before{content:"";position:absolute;top:-100px;right:-200px;width:600px;height:600px;background:radial-gradient(circle,rgba(201,123,63,0.10) 0%,rgba(201,123,63,0) 65%);pointer-events:none}
+  .hero::after{content:"";position:absolute;bottom:-150px;left:-150px;width:500px;height:500px;background:radial-gradient(circle,rgba(47,111,94,0.08) 0%,rgba(47,111,94,0) 65%);pointer-events:none}
+  .hero-grid{display:grid;grid-template-columns:1.1fr 0.9fr;gap:60px;align-items:center;position:relative}
+  .hero h1 span{color:var(--primary);font-style:italic}
+  .hero .meta{display:flex;gap:18px;margin-top:28px;flex-wrap:wrap;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--ink-3)}
+  .hero .meta span::before{content:"·";margin-right:14px;color:var(--ink-3)}
+  .hero .meta span:first-child::before{content:"";margin:0}
+  .hero-portrait{position:relative;aspect-ratio:1/1;border-radius:24px;overflow:hidden;box-shadow:0 30px 60px -20px rgba(20,23,30,0.25),0 10px 30px -10px rgba(20,23,30,0.15)}
+  .hero-portrait img{width:100%;height:100%;object-fit:cover;display:block;filter:saturate(1.05)}
+  .hero-portrait .badge{position:absolute;bottom:18px;left:18px;background:rgba(20,23,30,0.78);backdrop-filter:blur(10px);color:white;padding:10px 14px;border-radius:12px;font-family:'JetBrains Mono',monospace;font-size:12px;display:flex;align-items:center;gap:10px}
+  .hero-portrait .badge .pulse{width:8px;height:8px;border-radius:50%;background:#4ade80;box-shadow:0 0 0 0 rgba(74,222,128,0.7);animation:pulse 2s infinite}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(74,222,128,0.7)}70%{box-shadow:0 0 0 8px rgba(74,222,128,0)}100%{box-shadow:0 0 0 0 rgba(74,222,128,0)}}
+
+  @media (max-width:800px){
+    .hero-grid{grid-template-columns:1fr;gap:36px}
+  }
+
+  /* ---------- CHAPTER ---------- */
+  .chapter-head{display:grid;grid-template-columns:120px 1fr;gap:32px;align-items:start;margin-bottom:36px}
+  .chapter-num{font-family:'DM Serif Display',serif;font-size:84px;line-height:0.9;color:var(--primary);opacity:0.85;letter-spacing:-0.04em}
+  .chapter-head h2{margin-bottom:8px}
+  .chapter-head p{margin:0;color:var(--ink-2)}
+  @media (max-width:720px){.chapter-head{grid-template-columns:1fr;gap:12px}.chapter-num{font-size:64px}}
+
+  /* ---------- pixel explorer ---------- */
+  .explorer{display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:stretch;margin-top:8px}
+  .canvas-card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:18px;box-shadow:0 2px 8px rgba(0,0,0,0.03);display:flex;flex-direction:column;gap:12px}
+  .canvas-card .lbl{display:flex;justify-content:space-between;align-items:baseline;font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--ink-3);text-transform:uppercase;letter-spacing:0.1em}
+  .canvas-card .lbl b{color:var(--ink);font-weight:500}
+  .canvas-wrap{position:relative;border-radius:12px;overflow:hidden;background:#0e0f12;aspect-ratio:1/1}
+  .canvas-wrap canvas{width:100%;height:100%;display:block;image-rendering:pixelated}
+  .canvas-wrap canvas.gray{image-rendering:pixelated}
+  .zoom-readout{position:absolute;bottom:12px;right:12px;background:rgba(20,23,30,0.85);color:white;padding:8px 12px;border-radius:8px;font-family:'JetBrains Mono',monospace;font-size:12px;backdrop-filter:blur(8px)}
+  .grid-magnify{position:absolute;top:12px;left:12px;width:80px;height:80px;border:2px solid var(--primary);border-radius:8px;pointer-events:none;overflow:hidden;background:#0e0f12;box-shadow:0 0 0 4px rgba(201,123,63,0.18);opacity:0;transition:opacity 0.18s}
+  .grid-magnify.show{opacity:1}
+  .grid-magnify canvas{width:200%;height:200%;image-rendering:pixelated}
+  @media (max-width:780px){.explorer{grid-template-columns:1fr}}
+
+  /* ---------- KERNEL ---------- */
+  .kernel-card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:24px;box-shadow:0 2px 8px rgba(0,0,0,0.03);margin-top:24px}
+  .kernel-head{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:20px;flex-wrap:wrap;gap:12px}
+  .kernel-head h3{margin:0}
+  .kernel-head .desc{color:var(--ink-3);font-size:14px;max-width:44ch}
+  .kernel-grid{display:grid;grid-template-columns:minmax(220px,280px) 1fr;gap:28px;align-items:center}
+  .kernel-matrix{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;background:var(--ink-bg);padding:14px;border-radius:14px;box-shadow:inset 0 2px 6px rgba(0,0,0,0.4)}
+  .kernel-matrix .cell{aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:500;color:#f4f1ea;border-radius:4px;position:relative;overflow:hidden}
+  .kernel-matrix .cell.neg{color:#f0c0a0}
+  .kernel-matrix .cell.pos{color:#a8d4c5}
+  .kernel-matrix .cell.zero{color:#7a7a72}
+  .kernel-matrix .cell.active{outline:2px solid var(--primary);outline-offset:1px;z-index:2}
+  .kernel-picker{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+  .kpill{font-family:'JetBrains Mono',monospace;font-size:12px;padding:8px 14px;border-radius:999px;background:var(--bg-soft);color:var(--ink-2);border:1px solid transparent;cursor:pointer;transition:all 0.15s;user-select:none}
+  .kpill:hover{background:#e6e0d2}
+  .kpill.active{background:var(--ink);color:#f7f5f0;border-color:var(--ink)}
+  .kernel-formula{background:var(--ink-bg);color:#d4cfc1;padding:14px 18px;border-radius:12px;font-family:'JetBrains Mono',monospace;font-size:13.5px;margin-top:16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .kernel-formula .eq{color:var(--teal-soft);font-size:16px}
+  .kernel-formula .var{color:var(--primary-soft)}
+  .kernel-formula .num{color:#f4d8a8}
+  @media (max-width:780px){.kernel-grid{grid-template-columns:1fr}}
+
+  /* ---------- convolution stage ---------- */
+  .conv-stage{display:grid;grid-template-columns:1.2fr 1fr;gap:24px;margin-top:24px}
+  .conv-stage .canvas-card{background:var(--ink-bg);border-color:var(--ink-line)}
+  .conv-stage .canvas-card .lbl{color:#7a7a72}
+  .conv-stage .canvas-card .lbl b{color:#e9e3d6}
+  .conv-stage .canvas-wrap{background:#000}
+  .conv-overlay{position:absolute;inset:0;pointer-events:none}
+  .kernel-window{position:absolute;border:2.5px solid var(--primary);box-shadow:0 0 0 9999px rgba(0,0,0,0.45),0 0 18px rgba(201,123,63,0.7);background:transparent;pointer-events:none;transition:all 0.05s linear;border-radius:2px}
+  .kernel-window-grid{position:absolute;inset:0;pointer-events:none}
+  .kernel-window-grid span{position:absolute;border:1px solid rgba(201,123,63,0.35)}
+  .output-readout{position:absolute;top:14px;right:14px;background:rgba(201,123,63,0.92);color:white;padding:10px 14px;border-radius:10px;font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:500;backdrop-filter:blur(8px);min-width:96px;text-align:center}
+  .output-readout .v{font-size:20px;display:block;margin-top:2px}
+  .controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .btn{font-family:'JetBrains Mono',monospace;font-size:12.5px;padding:9px 14px;border-radius:10px;background:var(--card);color:var(--ink);border:1px solid var(--line);cursor:pointer;transition:all 0.15s;display:inline-flex;align-items:center;gap:8px}
+  .btn:hover{border-color:var(--ink);transform:translateY(-1px)}
+  .btn.primary{background:var(--ink);color:#f7f5f0;border-color:var(--ink)}
+  .btn.primary:hover{background:#000}
+  .btn svg{width:14px;height:14px}
+  .control-row{display:flex;gap:10px;align-items:center;margin-top:14px;flex-wrap:wrap}
+  .control-row .info{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--ink-3)}
+  .speed{display:flex;align-items:center;gap:8px;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--ink-3)}
+  .speed input{accent-color:var(--primary)}
+  @media (max-width:780px){.conv-stage{grid-template-columns:1fr}}
+
+  /* ---------- feature maps ---------- */
+  .fm-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:18px}
+  .fm-tile{background:var(--ink-bg);border-radius:8px;overflow:hidden;position:relative;aspect-ratio:1/1;cursor:pointer;border:2px solid transparent;transition:all 0.15s}
+  .fm-tile:hover{transform:translateY(-2px)}
+  .fm-tile.active{border-color:var(--primary);box-shadow:0 0 0 4px rgba(201,123,63,0.18)}
+  .fm-tile canvas{width:100%;height:100%;display:block;image-rendering:pixelated}
+  .fm-tile .tag{position:absolute;top:6px;left:6px;background:rgba(20,23,30,0.78);color:white;padding:3px 7px;border-radius:5px;font-family:'JetBrains Mono',monospace;font-size:10.5px;backdrop-filter:blur(4px)}
+  .fm-tile .val{position:absolute;bottom:6px;right:6px;background:rgba(201,123,63,0.92);color:white;padding:3px 7px;border-radius:5px;font-family:'JetBrains Mono',monospace;font-size:10.5px}
+  @media (max-width:780px){.fm-grid{grid-template-columns:repeat(3,1fr)}}
+  @media (max-width:480px){.fm-grid{grid-template-columns:repeat(2,1fr)}}
+
+  /* ---------- pipeline diagram ---------- */
+  .pipe{display:flex;align-items:stretch;gap:6px;overflow-x:auto;padding:18px 0;margin:24px 0}
+  .pipe-node{flex:0 0 auto;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 12px;min-width:108px;text-align:center;position:relative;box-shadow:0 2px 8px rgba(0,0,0,0.03)}
+  .pipe-node.dim{opacity:0.4}
+  .pipe-node .name{font-family:'JetBrains Mono',monospace;font-size:11.5px;letter-spacing:0.05em;color:var(--ink-3);text-transform:uppercase}
+  .pipe-node .val{font-family:'DM Serif Display',serif;font-size:24px;color:var(--ink);margin-top:4px;line-height:1}
+  .pipe-node .sub{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-3);margin-top:6px}
+  .pipe-node.acc{background:var(--ink);border-color:var(--ink)}
+  .pipe-node.acc .name,.pipe-node.acc .sub{color:#9a958a}
+  .pipe-node.acc .val{color:#f4d8a8}
+  .pipe-arrow{flex:0 0 auto;display:flex;align-items:center;color:var(--ink-3);padding:0 4px}
+
+  /* ---------- activation graph ---------- */
+  .act-row{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:24px}
+  .act-card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:20px;box-shadow:0 2px 8px rgba(0,0,0,0.03)}
+  .act-card h4{margin:0 0 4px;font-family:'Outfit',sans-serif;font-size:13px;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;color:var(--ink-3)}
+  .act-card .canvas-wrap{aspect-ratio:1/1;background:#0e0f12}
+  .act-card canvas{width:100%;height:100%;display:block}
+  .relu-curve{width:100%;height:auto;display:block}
+  @media (max-width:780px){.act-row{grid-template-columns:1fr}}
+
+  /* ---------- pooling ---------- */
+  .pool-demo{display:grid;grid-template-columns:1fr auto 1fr auto 1fr;gap:18px;align-items:center;margin-top:24px}
+  .pool-tile{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px}
+  .pool-tile h4{margin:0 0 10px;font-family:'Outfit',sans-serif;font-size:12px;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;color:var(--ink-3)}
+  .pool-tile .canvas-wrap{aspect-ratio:1/1;background:#0e0f12;border-radius:8px}
+  .pool-tile canvas{width:100%;height:100%;display:block;image-rendering:pixelated}
+  .pool-arrow{display:flex;flex-direction:column;align-items:center;gap:6px;color:var(--ink-3);font-family:'JetBrains Mono',monospace;font-size:11px;text-align:center}
+  .pool-arrow svg{width:36px;height:36px;color:var(--ink-3)}
+  @media (max-width:780px){.pool-demo{grid-template-columns:1fr}.pool-arrow{transform:rotate(90deg)}}
+
+  /* ---------- architecture / layers ---------- */
+  .layers{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:24px}
+  .layer-card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px;box-shadow:0 2px 8px rgba(0,0,0,0.03);display:flex;flex-direction:column;gap:12px}
+  .layer-card .canvas-wrap{aspect-ratio:1/1;background:#0e0f12;border-radius:10px;position:relative;overflow:hidden}
+  .layer-card canvas{width:100%;height:100%;display:block;image-rendering:pixelated}
+  .layer-card h4{font-family:'Outfit',sans-serif;font-size:12px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink-3);margin:0;display:flex;justify-content:space-between}
+  .layer-card h4 .num{color:var(--primary);font-family:'JetBrains Mono',monospace}
+  .layer-card .meta{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--ink-3);line-height:1.6}
+  .layer-card .meta b{color:var(--ink-2);font-weight:500}
+  .layer-card .label{position:absolute;top:8px;right:8px;background:rgba(20,23,30,0.78);color:white;padding:3px 7px;border-radius:5px;font-family:'JetBrains Mono',monospace;font-size:10px}
+  @media (max-width:780px){.layers{grid-template-columns:repeat(2,1fr)}}
+
+  /* ---------- classification ---------- */
+  .classify{display:grid;grid-template-columns:1fr 1.4fr;gap:24px;margin-top:24px}
+  .cls-canvas{background:var(--ink-bg);border-radius:20px;padding:18px;display:flex;flex-direction:column;gap:12px}
+  .cls-canvas .canvas-wrap{aspect-ratio:1/1;background:#0e0f12;border-radius:12px;position:relative;overflow:hidden}
+  .cls-canvas .canvas-wrap canvas{width:100%;height:100%;display:block;image-rendering:pixelated}
+  .cls-bars{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:24px;box-shadow:0 2px 8px rgba(0,0,0,0.03);display:flex;flex-direction:column;gap:14px}
+  .cls-bars h4{margin:0;font-family:'Outfit',sans-serif;font-size:13px;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;color:var(--ink-3)}
+  .cls-row{display:grid;grid-template-columns:120px 1fr 70px;gap:12px;align-items:center}
+  .cls-row .name{font-family:'Outfit',sans-serif;font-size:14px;color:var(--ink)}
+  .cls-row .name small{color:var(--ink-3);font-family:'JetBrains Mono',monospace;font-size:10.5px;display:block;margin-top:2px;letter-spacing:0.04em}
+  .cls-row .bar-bg{height:18px;background:var(--bg-soft);border-radius:6px;overflow:hidden;position:relative}
+  .cls-row .bar-fill{height:100%;background:linear-gradient(90deg,var(--primary),#e2a778);border-radius:6px;transition:width 1s cubic-bezier(0.16,1,0.3,1);position:relative}
+  .cls-row .bar-fill.alt{background:linear-gradient(90deg,var(--teal),var(--teal-soft))}
+  .cls-row .bar-fill.gray{background:linear-gradient(90deg,#a8a59c,#c2bfb6)}
+  .cls-row .pct{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--ink);text-align:right;font-weight:500}
+  .cls-row .name.winner{color:var(--primary);font-weight:600}
+  .cls-row .name.winner small{color:var(--primary-soft)}
+  @media (max-width:780px){.classify{grid-template-columns:1fr}}
+
+  /* ---------- summary ---------- */
+  .summary-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:24px}
+  .stat{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px 20px;box-shadow:0 2px 8px rgba(0,0,0,0.03)}
+  .stat .v{font-family:'DM Serif Display',serif;font-size:36px;line-height:1;color:var(--ink)}
+  .stat .v small{font-family:'JetBrains Mono',monospace;font-size:14px;color:var(--ink-3);margin-left:4px}
+  .stat .l{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-3);text-transform:uppercase;letter-spacing:0.1em;margin-top:10px}
+  .stat .d{font-size:13px;color:var(--ink-2);margin-top:6px;line-height:1.45}
+  @media (max-width:780px){.summary-grid{grid-template-columns:repeat(2,1fr)}}
+
+  /* ---------- footer ---------- */
+  footer{padding:60px 0 30px;border-top:1px solid var(--line);text-align:center;color:var(--ink-3);font-size:13px}
+  footer .sig{font-family:'DM Serif Display',serif;font-style:italic;font-size:18px;color:var(--ink-2);margin-bottom:8px}
+
+  /* utilities */
+  .row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+  .spacer{height:24px}
+  .text-mute{color:var(--ink-3)}
+  .marker{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:6px;vertical-align:middle}
+  .marker.neg{background:#c97b3f}
+  .marker.zero{background:#7a7a72}
+  .marker.pos{background:#2f6f5e}
+
+  /* tooltip over pixel */
+  .tt{position:absolute;background:rgba(20,23,30,0.92);color:white;padding:8px 12px;border-radius:8px;font-family:'JetBrains Mono',monospace;font-size:11.5px;pointer-events:none;opacity:0;transform:translate(-50%,-130%);transition:opacity 0.1s;white-space:nowrap;backdrop-filter:blur(6px);z-index:10}
+  .tt.show{opacity:1}
+</style>
+</head>
+<body>
+
+<!-- HERO ============================================================ -->
+<header class="hero">
+  <div class="wrap">
+    <div class="hero-grid">
+      <div>
+        <span class="eyebrow"><span class="dot"></span> Material interactivo · sin código</span>
+        <h1 class="serif" style="margin-top:6px">Cómo una IA <span>reconoce</span> a un gato</h1>
+        <p class="lead" style="margin-top:22px">Te llevamos de la mano por dentro de una inteligencia artificial. Vas a ver cómo una foto se va convirtiendo, paso a paso, en la frase "esto es un gato": primero líneas, después formas, finalmente el animal entero.</p>
+        <div class="meta">
+          <span>imagen: 224×224</span>
+          <span>3 colores</span>
+          <span>5 niveles de análisis</span>
+          <span>millones de ajustes internos</span>
+        </div>
+      </div>
+      <div class="hero-portrait">
+        <img id="heroCat" alt="Retrato de gato" />
+        <div class="badge"><span class="pulse"></span>Entrada · foto de 224×224</div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- 1 PIXELS ======================================================== -->
+<section id="cap-1">
+  <div class="wrap">
+    <div class="chapter-head">
+      <div class="chapter-num">01</div>
+      <div>
+        <span class="eyebrow"><span class="dot"></span> El primer paso</span>
+        <h2>Para la IA, un gato es una rejilla de números</h2>
+        <p>Pasa el cursor sobre la foto: cada puntito tiene un número del 0 al 255 para los colores rojo, verde y azul. La IA no "ve" bigotes ni ojos — solo maneja esa rejilla de números.</p>
+      </div>
+    </div>
+
+    <div class="explorer">
+      <div class="canvas-card">
+        <div class="lbl"><b>Foto a color</b><span>224×224 puntos · 3 colores</span></div>
+        <div class="canvas-wrap" id="explorerWrap">
+          <canvas id="explorerCanvas" width="224" height="224"></canvas>
+          <div class="grid-magnify" id="gridMag"><canvas id="gridMagCanvas" width="40" height="40"></canvas></div>
+          <div class="tt" id="explorerTT"></div>
+        </div>
+        <small>Mueve el mouse sobre la imagen para ver qué números esconde cada zona. El recuadro naranja muestra una ampliación 5×.</small>
+      </div>
+      <div class="canvas-card">
+        <div class="lbl"><b>En blanco y negro</b><span>224×224 puntos · 1 tono</span></div>
+        <div class="canvas-wrap">
+          <canvas id="explorerGray" width="224" height="224" class="gray"></canvas>
+        </div>
+        <small>Si mezclamos los tres colores (rojo + verde + azul, dividido entre 3), nos quedamos con un solo tono. Las IAs suelen empezar trabajando así, en blanco y negro.</small>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 2 KERNEL ======================================================== -->
+<section id="cap-2">
+  <div class="wrap">
+    <div class="chapter-head">
+      <div class="chapter-num">02</div>
+      <div>
+        <span class="eyebrow"><span class="dot"></span> La herramienta básica</span>
+        <h2>Una ventanita de 3×3 que mira un pedacito a la vez</h2>
+        <p>Imagina una lupa cuadrada de 3×3 puntitos. La IA la va poniendo sobre la foto. En cada posición, multiplica los 9 números de la lupa por los 9 puntitos que tiene debajo, los suma, y apunta un único número. Ese número es "qué vio" en ese lugar.</p>
+      </div>
+    </div>
+
+    <div class="kernel-card">
+      <div class="kernel-head">
+        <div>
+          <h3>Elige una lupa y observa qué detecta</h3>
+          <p class="desc">Estas son lupas clásicas, inventadas hace décadas. En una IA real, los números se descubren solos — pero la idea es la misma.</p>
+        </div>
+        <div class="kernel-picker" id="kernelPicker">
+          <button class="kpill active" data-k="vedge">Bordes verticales</button>
+          <button class="kpill" data-k="hedge">Bordes horizontales</button>
+          <button class="kpill" data-k="blur">Desenfoque</button>
+          <button class="kpill" data-k="sharpen">Realce</button>
+          <button class="kpill" data-k="emboss">Relieve</button>
+          <button class="kpill" data-k="identity">Sin cambios</button>
+        </div>
+      </div>
+      <div class="kernel-grid">
+        <div>
+          <div class="kernel-matrix" id="kernelMatrix"></div>
+          <div class="kernel-formula">
+            <span>Resultado =</span>
+            <span class="eq">Σ</span>
+            <span><span class="var">lupa</span> × <span class="var">foto</span></span>
+            <span class="text-mute" style="color:#7a7a72"> sobre los 9 cuadritos</span>
+          </div>
+          <small style="display:block;margin-top:14px"><span class="marker neg"></span> números negativos · <span class="marker pos"></span> positivos · <span class="marker zero"></span> cero</small>
+        </div>
+        <div>
+          <div class="canvas-card" style="background:var(--ink-bg);border-color:var(--ink-line)">
+            <div class="lbl"><b style="color:#e9e3d6">Aplicado a la foto</b><span style="color:#7a7a72" id="kernelDesc">Detecta bordes verticales</span></div>
+            <div class="canvas-wrap" style="background:#000">
+              <canvas id="kernelResult" width="224" height="224" class="gray"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 3 CONVOLUTION STAGE ============================================ -->
+<section id="cap-3">
+  <div class="wrap">
+    <div class="chapter-head">
+      <div class="chapter-num">03</div>
+      <div>
+        <span class="eyebrow"><span class="dot"></span> Poniendo la lupa en marcha</span>
+        <h2>La ventanita recorre la foto entera</h2>
+        <p>La lupa va pasando por <b>todas</b> las posiciones posibles. En cada parada, mira 9 cuadritos, hace su cuenta, y anota un número. Cuando termina, tenemos una nueva "imagen" donde cada punto nos dice "qué tan fuerte es el patrón aquí".</p>
+      </div>
+    </div>
+
+    <div class="conv-stage">
+      <div class="canvas-card">
+        <div class="lbl"><b>Foto original</b><span>La lupa de 3×3 va pasando</span></div>
+        <div class="canvas-wrap" id="convSrcWrap">
+          <canvas id="convSrc" width="224" height="224" class="gray"></canvas>
+          <div class="conv-overlay" id="convOverlay">
+            <div class="kernel-window" id="kernelWindow"></div>
+          </div>
+          <div class="output-readout" id="outputReadout">
+            resultado<span class="v" id="outputVal">—</span>
+          </div>
+        </div>
+        <div class="control-row">
+          <div class="controls">
+            <button class="btn primary" id="btnPlay"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg><span id="btnPlayLbl">Reproducir</span></button>
+            <button class="btn" id="btnStep"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 4 15 12 5 20 5 4"/><line x1="19" y1="5" x2="19" y2="19"/></svg>Paso</button>
+            <button class="btn" id="btnReset"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>Reiniciar</button>
+          </div>
+          <div class="speed">
+            <span>velocidad</span>
+            <input type="range" id="speedRange" min="1" max="60" value="20" />
+          </div>
+        </div>
+      </div>
+      <div class="canvas-card">
+        <div class="lbl"><b>"Mapa" resultante</b><span>Lo que vio · <span id="outSize">— × —</span></span></div>
+        <div class="canvas-wrap">
+          <canvas id="convDst" width="222" height="222" class="gray"></canvas>
+        </div>
+        <small>Cada zona brillante indica "aquí la lupa encontró su patrón". La imagen de salida es un poquito más pequeña (222×222) porque la lupa no puede salirse del borde de la foto.</small>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 4 FEATURE MAPS ================================================= -->
+<section id="cap-4">
+  <div class="wrap">
+    <div class="chapter-head">
+      <div class="chapter-num">04</div>
+      <div>
+        <span class="eyebrow"><span class="dot"></span> Muchas lupas a la vez</span>
+        <h2>Una capa usa <em>muchas</em> lupas en paralelo</h2>
+        <p>En la vida real, la IA no usa una sola lupa, usa docenas o cientos a la vez. Cada una aprende a fijarse en algo distinto: rayas verticales, rayas horizontales, esquinitas, manchitas, texturas. Todos los resultados se apilan y se mandan al siguiente nivel.</p>
+      </div>
+    </div>
+
+    <div class="kernel-card" style="margin-top:8px">
+      <div class="kernel-head">
+        <div>
+          <h3>8 lupas aplicadas en paralelo</h3>
+          <p class="desc">Haz clic en una imagen para ver qué lupa la produjo. En una red real, los números de cada lupa se ajustan solos, probando millones de combinaciones hasta que cada una detecta algo útil.</p>
+        </div>
+      </div>
+      <div class="fm-grid" id="fmGrid"></div>
+    </div>
+  </div>
+</section>
+
+<!-- 5 RELU ========================================================= -->
+<section id="cap-5">
+  <div class="wrap">
+    <div class="chapter-head">
+      <div class="chapter-num">05</div>
+      <div>
+        <span class="eyebrow"><span class="dot"></span> Limpiando la señal</span>
+        <h2>Lo negativo, fuera</h2>
+        <p>Después de mirar la imagen con las lupas, hacemos una limpieza muy simple: si un número es negativo, se vuelve cero. Esto elimina el "ruido de fondo" y deja solo las señales que importan. Es como pedirle a la red: "solo dime si encontraste algo, no me importa cuánto fallaste".</p>
+      </div>
+    </div>
+
+    <div class="act-row">
+      <div class="act-card">
+        <h4>Antes · lo que salió de la lupa</h4>
+        <div class="canvas-wrap"><canvas id="reluBefore" width="222" height="222" class="gray"></canvas></div>
+      </div>
+      <div class="act-card">
+        <h4>Después · los negativos se van</h4>
+        <div class="canvas-wrap"><canvas id="reluAfter" width="222" height="222" class="gray"></canvas></div>
+      </div>
+    </div>
+
+    <div class="kernel-card" style="margin-top:24px">
+      <div class="kernel-head">
+        <div>
+          <h3>La regla matemática</h3>
+          <p class="desc">Pura, simple, barata. Por eso se usa en casi todas las IAs modernas.</p>
+        </div>
+      </div>
+      <svg class="relu-curve" viewBox="0 0 640 240" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="reluGrad" x1="0" x2="1" y1="0" y2="0">
+            <stop offset="0" stop-color="#b06367"/>
+            <stop offset="0.5" stop-color="#c97b3f"/>
+            <stop offset="1" stop-color="#2f6f5e"/>
+          </linearGradient>
+        </defs>
+        <!-- grid -->
+        <g stroke="#e9e3d6" stroke-width="1">
+          <line x1="20" y1="120" x2="600" y2="120"/>
+          <line x1="300" y1="20" x2="300" y2="220"/>
+          <line x1="120" y1="20" x2="120" y2="220" stroke-dasharray="3 3" stroke="#e9e3d6"/>
+          <line x1="480" y1="20" x2="480" y2="220" stroke-dasharray="3 3" stroke="#e9e3d6"/>
+        </g>
+        <!-- axis labels -->
+        <g font-family="JetBrains Mono, monospace" font-size="11" fill="#7c7a72">
+          <text x="306" y="16">x</text>
+          <text x="610" y="124">f(x)</text>
+          <text x="100" y="234">−2</text>
+          <text x="200" y="234">−1</text>
+          <text x="298" y="234">0</text>
+          <text x="478" y="234">1</text>
+          <text x="560" y="234">2</text>
+        </g>
+        <!-- function -->
+        <path d="M 20 220 L 120 220 L 300 120 L 480 20 L 600 20" fill="none" stroke="url(#reluGrad)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+        <!-- highlight region -->
+        <rect x="20" y="120" width="280" height="100" fill="#b06367" opacity="0.07"/>
+        <rect x="300" y="20" width="300" height="100" fill="#2f6f5e" opacity="0.07"/>
+        <g font-family="Outfit, sans-serif" font-size="12" fill="#3a4256">
+          <text x="60" y="100" text-anchor="middle">si x &lt; 0 → 0</text>
+          <text x="450" y="100" text-anchor="middle">si x ≥ 0 → x</text>
+        </g>
+        <text x="300" y="200" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="11" fill="#c97b3f" font-weight="600">"si es negativo, se va"</text>
+      </svg>
+    </div>
+  </div>
+</section>
+
+<!-- 6 POOLING ====================================================== -->
+<section id="cap-6">
+  <div class="wrap">
+    <div class="chapter-head">
+      <div class="chapter-num">06</div>
+      <div>
+        <span class="eyebrow"><span class="dot"></span> Achicando la imagen</span>
+        <h2>Quedarse con lo más fuerte</h2>
+        <p>Ahora la imagen se hace más chica. Miramos cada cuadrito de 2×2 y nos quedamos <b>solo con el número más alto</b>. El resultado es la mitad de ancho y la mitad de alto — un cuarto de los puntos — pero conserva los "picos" de señal, que son lo que importa.</p>
+      </div>
+    </div>
+
+    <div class="pool-demo">
+      <div class="pool-tile">
+        <h4>Imagen · 222×222</h4>
+        <div class="canvas-wrap"><canvas id="poolIn" width="222" height="222" class="gray"></canvas></div>
+      </div>
+      <div class="pool-arrow">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        <span>de cada<br>2×2 nos<br>quedamos<br>con el<br>mayor</span>
+      </div>
+      <div class="pool-tile">
+        <h4>Achicada · 111×111</h4>
+        <div class="canvas-wrap"><canvas id="poolOut" width="222" height="222" class="gray"></canvas></div>
+      </div>
+      <div class="pool-arrow">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        <span>4 veces<br>menos<br>datos</span>
+      </div>
+      <div class="pool-tile">
+        <h4>Las cuentas</h4>
+        <div style="display:flex;flex-direction:column;gap:10px;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--ink-2)">
+          <div><b style="color:var(--ink)">222² =</b> 49 284 puntos</div>
+          <div><b style="color:var(--ink)">111² =</b> 12 321 puntos</div>
+          <div style="border-top:1px solid var(--line);padding-top:10px"><b style="color:var(--primary)">÷ 4</b> más liviano</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 7 DEEP LAYERS ================================================== -->
+<section id="cap-7">
+  <div class="wrap">
+    <div class="chapter-head">
+      <div class="chapter-num">07</div>
+      <div>
+        <span class="eyebrow"><span class="dot"></span> Apilando niveles</span>
+        <h2>Cada nivel entiende cosas más complejas</h2>
+        <p>La magia está en <b>apilar</b>: el primer nivel detecta líneas y colores. El segundo combina esas líneas en <em>texturas</em>. El tercero junta las texturas en <em>partes</em> (orejas, narices, ojos). Los más profundos ya reconocen <em>el animal completo</em>. Es como enseñarle a un niño: primero rayitas, después formas, después objetos.</p>
+      </div>
+    </div>
+
+    <div class="layers" id="layersDemo"></div>
+  </div>
+</section>
+
+<!-- 8 CLASSIFICATION =============================================== -->
+<section id="cap-8">
+  <div class="wrap">
+    <div class="chapter-head">
+      <div class="chapter-num">08</div>
+      <div>
+        <span class="eyebrow"><span class="dot"></span> La decisión final</span>
+        <h2>Una lista de 1000 números y porcentajes</h2>
+        <p>Después de todas las capas, lo que queda es una lista de 1000 números. Cada número es una categoría posible ("gato", "perro", "auto"...). Un último paso convierte esos números en <b>porcentajes que suman 100</b>. La categoría con el porcentaje más alto es la respuesta de la red.</p>
+      </div>
+    </div>
+
+    <div class="classify">
+      <div class="cls-canvas">
+        <div class="lbl" style="color:#9a958a;display:flex;justify-content:space-between"><b style="color:#e9e3d6">La lista interna</b><span>1000 números</span></div>
+        <div class="canvas-wrap"><canvas id="finalFeat" width="224" height="40"></canvas></div>
+        <div class="lbl" style="color:#9a958a;display:flex;justify-content:space-between"><b style="color:#e9e3d6">Mapa más profundo</b><span>7×7 puntos</span></div>
+        <div class="canvas-wrap" style="aspect-ratio:1/1"><canvas id="deepMap" width="224" height="224" class="gray"></canvas></div>
+      </div>
+      <div class="cls-bars">
+        <h4>Las 8 mejores apuestas</h4>
+        <div id="clsBars"></div>
+        <small style="margin-top:auto;padding-top:14px;border-top:1px solid var(--line)">La IA fue entrenada con 1.4 millones de fotos etiquetadas en 1000 categorías. Esta es una simulación basada en una predicción creíble — un modelo real daría otros números.</small>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 9 SUMMARY ====================================================== -->
+<section id="cap-9">
+  <div class="wrap">
+    <div class="chapter-head">
+      <div class="chapter-num">09</div>
+      <div>
+        <span class="eyebrow"><span class="dot"></span> El panorama completo</span>
+        <h2>Lo que acaba de pasar, en una mirada</h2>
+        <p>Una IA que reconoce imágenes no es magia: es una composición de operaciones simples (lupa, limpieza, achicado) repetidas muchas veces, con números que se ajustan solos para que el resultado sea correcto.</p>
+      </div>
+    </div>
+
+    <div class="summary-grid">
+      <div class="stat">
+        <div class="v">224<small>px</small></div>
+        <div class="l">Entrada</div>
+        <div class="d">Una foto a color convertida en una rejilla de 224×224 puntos.</div>
+      </div>
+      <div class="stat">
+        <div class="v">5<small>niveles</small></div>
+        <div class="l">Profundidad</div>
+        <div class="d">Lupa → limpieza → achicado, repetido, terminando en una decisión.</div>
+      </div>
+      <div class="stat">
+        <div class="v">~4<small>M</small></div>
+        <div class="l">Ajustes</div>
+        <div class="d">Millones de números que la IA va calibrando con cada foto de ejemplo.</div>
+      </div>
+      <div class="stat">
+        <div class="v">97.3<small>%</small></div>
+        <div class="l">Confianza</div>
+        <div class="d">La probabilidad de que la foto contenga un gato.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="sig">"No vemos con los ojos. Vemos con el cerebro." — y la IA, también.</div>
+    Material interactivo · Cómo una IA reconoce a un gato · Funciona en cualquier navegador
+  </div>
+</footer>
+
+<!-- ============== JAVASCRIPT ============== -->
+<script>
+/* ============================================================
+   Embedded data
+============================================================ */
+const CAT_B64 = "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";
+
+/* kernels: each is 3x3 */
+const KERNELS = {
+  vedge:    { name:"Bordes vertical", desc:"Detecta cambios bruscos de izquierda a derecha", k:[[-1,0,1],[-2,0,2],[-1,0,1]] },
+  hedge:    { name:"Bordes horizontal", desc:"Detecta cambios bruscos de arriba a abajo",   k:[[-1,-2,-1],[0,0,0],[1,2,1]] },
+  blur:     { name:"Desenfoque gaussiano", desc:"Suaviza la imagen promediando vecinos",     k:[[1/16,2/16,1/16],[2/16,4/16,2/16],[1/16,2/16,1/16]] },
+  sharpen:  { name:"Realce", desc:"Resalta bordes y detalles finos",                       k:[[0,-1,0],[-1,5,-1],[0,-1,0]] },
+  emboss:   { name:"Relieve", desc:"Crea efecto 3D tipo relieve",                          k:[[-2,-1,0],[-1,1,1],[0,1,2]] },
+  identity: { name:"Identidad", desc:"Deja la imagen igual (kernel neutro)",                k:[[0,0,0],[0,1,0],[0,0,0]] }
+};
+
+/* 8 diverse kernels for the feature-map grid */
+const FM_KERNELS = [
+  { name:"V-edge", k:[[-1,0,1],[-2,0,2],[-1,0,1]] },
+  { name:"H-edge", k:[[-1,-2,-1],[0,0,0],[1,2,1]] },
+  { name:"Diag ↘", k:[[0,1,2],[-1,0,1],[-2,-1,0]] },
+  { name:"Diag ↙", k:[[2,1,0],[1,0,-1],[0,-1,-2]] },
+  { name:"Blur",   k:[[1/16,2/16,1/16],[2/16,4/16,2/16],[1/16,2/16,1/16]] },
+  { name:"Sharpen",k:[[0,-1,0],[-1,5,-1],[0,-1,0]] },
+  { name:"Top sobel",k:[[-1,-1,-1],[-1,8,-1],[-1,-1,-1]] },
+  { name:"Emboss", k:[[-2,-1,0],[-1,1,1],[0,1,2]] }
+];
+
+/* ============================================================
+   Image loading
+============================================================ */
+let catImg = null;
+let srcData = null;          // ImageData (grayscale) 224x224
+let srcDataRGB = null;       // ImageData (RGB) 224x224
+let grayMatrix = null;       // Float32Array 224x224, single channel
+
+function loadCat(){
+  return new Promise((resolve,reject)=>{
+    const img = new Image();
+    img.onload = ()=>{ catImg = img; resolve(img); };
+    img.onerror = reject;
+    img.src = "data:image/jpeg;base64," + CAT_B64;
+  });
+}
+
+function prepareData(){
+  // RGB
+  const c = document.createElement('canvas');
+  c.width = 224; c.height = 224;
+  const ctx = c.getContext('2d');
+  ctx.drawImage(catImg, 0, 0, 224, 224);
+  srcDataRGB = ctx.getImageData(0,0,224,224);
+  // grayscale
+  grayMatrix = new Float32Array(224*224);
+  for (let i=0; i<224*224; i++){
+    const r = srcDataRGB.data[i*4];
+    const g = srcDataRGB.data[i*4+1];
+    const b = srcDataRGB.data[i*4+2];
+    grayMatrix[i] = 0.299*r + 0.587*g + 0.114*b;
+  }
+  srcData = new ImageData(224,224);
+  for (let i=0; i<224*224; i++){
+    const v = Math.round(grayMatrix[i]);
+    srcData.data[i*4] = v;
+    srcData.data[i*4+1] = v;
+    srcData.data[i*4+2] = v;
+    srcData.data[i*4+3] = 255;
+  }
+}
+
+/* ============================================================
+   Convolution core
+============================================================ */
+function conv2d(src, srcW, srcH, kernel, dstW, dstH){
+  const out = new Float32Array(dstW*dstH);
+  for (let y=0; y<dstH; y++){
+    for (let x=0; x<dstW; x++){
+      let s = 0;
+      for (let ky=0; ky<3; ky++){
+        for (let kx=0; kx<3; kx++){
+          const sx = x + kx;
+          const sy = y + ky;
+          if (sx>=0 && sx<srcW && sy>=0 && sy<srcH){
+            s += src[sy*srcW + sx] * kernel[ky][kx];
+          }
+        }
+      }
+      out[y*dstW + x] = s;
+    }
+  }
+  return out;
+}
+
+function relu(arr){ for (let i=0; i<arr.length; i++) if (arr[i]<0) arr[i]=0; return arr; }
+
+function maxPool2(src, srcW, srcH){
+  const dstW = Math.floor(srcW/2);
+  const dstH = Math.floor(srcH/2);
+  const out = new Float32Array(dstW*dstH);
+  for (let y=0; y<dstH; y++){
+    for (let x=0; x<dstW; x++){
+      const i = (y*2)*srcW + (x*2);
+      const v0 = src[i], v1 = src[i+1], v2 = src[i+srcW], v3 = src[i+srcW+1];
+      out[y*dstW+x] = Math.max(v0, v1, v2, v3);
+    }
+  }
+  return { data:out, w:dstW, h:dstH };
+}
+
+function toImageData(arr, w, h, mode){
+  // mode: 'raw' (treat as 0-255), 'norm' (auto-normalize to 0-255), 'signed' (center 128)
+  let min=Infinity, max=-Infinity;
+  if (mode==='norm' || mode==='signed'){
+    for (let i=0; i<arr.length; i++){ if (arr[i]<min) min=arr[i]; if (arr[i]>max) max=arr[i]; }
+  }
+  const id = new ImageData(w, h);
+  for (let i=0; i<arr.length; i++){
+    let v;
+    if (mode==='raw') v = Math.max(0, Math.min(255, arr[i]));
+    else if (mode==='norm'){
+      const t = (arr[i]-min)/(max-min || 1);
+      v = Math.round(t*255);
+    } else { // signed
+      const t = (arr[i]-min)/(max-min || 1); // 0..1
+      v = Math.round(t*255);
+    }
+    id.data[i*4]=v; id.data[i*4+1]=v; id.data[i*4+2]=v; id.data[i*4+3]=255;
+  }
+  return id;
+}
+
+/* ============================================================
+   HERO
+============================================================ */
+function initHero(){
+  document.getElementById('heroCat').src = "data:image/jpeg;base64," + CAT_B64;
+}
+
+/* ============================================================
+   CHAPTER 1: pixel explorer
+============================================================ */
+function initExplorer(){
+  const cv = document.getElementById('explorerCanvas');
+  cv.getContext('2d').putImageData(srcDataRGB, 0, 0);
+  const cvG = document.getElementById('explorerGray');
+  cvG.getContext('2d').putImageData(srcData, 0, 0);
+
+  const wrap = document.getElementById('explorerWrap');
+  const tt = document.getElementById('explorerTT');
+  const mag = document.getElementById('gridMag');
+  const magCv = document.getElementById('gridMagCanvas');
+  const magCtx = magCv.getContext('2d');
+
+  function onMove(e){
+    const rect = cv.getBoundingClientRect();
+    const sx = cv.width / rect.width;
+    const sy = cv.height / rect.height;
+    const x = Math.floor((e.clientX - rect.left) * sx);
+    const y = Math.floor((e.clientY - rect.top) * sy);
+    if (x<0||y<0||x>=224||y>=224) return;
+
+    // magnifier
+    const half = 4;
+    const x0 = Math.max(0, x-half), y0 = Math.max(0, y-half);
+    const w = Math.min(8, 224-x0), h = Math.min(8, 224-y0);
+    // draw zoomed 5x
+    magCtx.imageSmoothingEnabled = false;
+    magCtx.fillStyle = "#0e0f12";
+    magCtx.fillRect(0,0,40,40);
+    magCtx.drawImage(cvG, x0, y0, w, h, 0, 0, w*5, h*5);
+    mag.classList.add('show');
+    // position
+    const wx = (e.clientX - rect.left);
+    const wy = (e.clientY - rect.top);
+    mag.style.left = (wx + 24) + 'px';
+    mag.style.top = (wy + 24) + 'px';
+    mag.style.transform = 'translate(0,0)';
+
+    // tooltip
+    const i = (y*224 + x)*4;
+    const r = srcDataRGB.data[i];
+    const g = srcDataRGB.data[i+1];
+    const b = srcDataRGB.data[i+2];
+    const lum = Math.round(grayMatrix[y*224+x]);
+    tt.innerHTML = `punto (${x},${y}) · rojo ${r} · verde ${g} · azul ${b}`;
+    tt.style.left = wx + 'px';
+    tt.style.top = wy + 'px';
+    tt.classList.add('show');
+  }
+  function onLeave(){
+    mag.classList.remove('show');
+    tt.classList.remove('show');
+  }
+  wrap.addEventListener('mousemove', onMove);
+  wrap.addEventListener('mouseleave', onLeave);
+  // touch
+  wrap.addEventListener('touchmove', e=>{ if(e.touches[0]) onMove(e.touches[0]); }, {passive:true});
+  wrap.addEventListener('touchend', onLeave);
+}
+
+/* ============================================================
+   CHAPTER 2: kernel visualization + result
+============================================================ */
+let currentKernel = KERNELS.vedge;
+
+function renderKernelMatrix(){
+  const grid = document.getElementById('kernelMatrix');
+  grid.innerHTML = '';
+  const k = currentKernel.k;
+  for (let y=0; y<3; y++){
+    for (let x=0; x<3; x++){
+      const v = k[y][x];
+      const cell = document.createElement('div');
+      cell.className = 'cell ' + (v<0?'neg':v>0?'pos':'zero');
+      if (Math.abs(v) < 0.001) cell.textContent = '0';
+      else cell.textContent = (v>0?' ':'') + (Math.abs(v) >= 1 ? v.toString() : v.toFixed(2));
+      grid.appendChild(cell);
+    }
+  }
+  document.getElementById('kernelDesc').textContent = currentKernel.desc;
+}
+
+function renderKernelResult(){
+  // apply to gray image, normalized
+  const out = conv2d(grayMatrix, 224, 224, currentKernel.k, 222, 222);
+  const id = toImageData(out, 222, 222, 'norm');
+  const cv = document.getElementById('kernelResult');
+  cv.width = 222; cv.height = 222;
+  cv.getContext('2d').putImageData(id, 0, 0);
+}
+
+function initKernelPicker(){
+  const picker = document.getElementById('kernelPicker');
+  picker.addEventListener('click', e=>{
+    const b = e.target.closest('.kpill');
+    if (!b) return;
+    [...picker.querySelectorAll('.kpill')].forEach(x=>x.classList.remove('active'));
+    b.classList.add('active');
+    currentKernel = KERNELS[b.dataset.k];
+    renderKernelMatrix();
+    renderKernelResult();
+  });
+}
+
+/* ============================================================
+   CHAPTER 3: animated convolution
+============================================================ */
+let convAnim = { x:110, y:80, playing:false, timer:null, speed:20, lastFrame:0 };
+
+function initConvStage(){
+  const src = document.getElementById('convSrc');
+  src.getContext('2d').putImageData(srcData, 0, 0);
+  document.getElementById('outSize').textContent = '222 × 222';
+
+  // Pre-compute the full output
+  const fullOut = conv2d(grayMatrix, 224, 224, currentKernel.k, 222, 222);
+  let min=Infinity, max=-Infinity;
+  for (let i=0;i<fullOut.length;i++){ if(fullOut[i]<min)min=fullOut[i]; if(fullOut[i]>max)max=fullOut[i]; }
+
+  const dst = document.getElementById('convDst');
+  const dstCtx = dst.getContext('2d');
+  const dstId = dstCtx.createImageData(222,222);
+  const win = document.getElementById('kernelWindow');
+
+  function placeWindow(){
+    // The window represents a 3x3 region in the image. We zoom it up so it's
+    // clearly visible at any display size.
+    const ZOOM = 6;
+    const rect = src.getBoundingClientRect();
+    const cssScaleX = rect.width / 224;
+    const cssScaleY = rect.height / 224;
+    const size = 3 * cssScaleX * ZOOM;
+    // Center the zoomed window on the actual top-left of the 3x3 region
+    const left = (convAnim.x * cssScaleX) - (size - 3 * cssScaleX) / 2;
+    const top  = (convAnim.y * cssScaleY) - (size - 3 * cssScaleY) / 2;
+    win.style.left = left + 'px';
+    win.style.top = top + 'px';
+    win.style.width = size + 'px';
+    win.style.height = size + 'px';
+    // 3x3 grid lines inside the window
+    let grid = win.querySelector('.grid-overlay');
+    if (!grid){
+      grid = document.createElement('div');
+      grid.className = 'grid-overlay';
+      grid.style.cssText = 'position:absolute;inset:0;pointer-events:none';
+      for (let i=1; i<3; i++){
+        const h = document.createElement('div');
+        h.style.cssText = `position:absolute;left:0;right:0;top:${(i*100/3)}%;height:1px;background:rgba(201,123,63,0.6)`;
+        grid.appendChild(h);
+        const v = document.createElement('div');
+        v.style.cssText = `position:absolute;top:0;bottom:0;left:${(i*100/3)}%;width:1px;background:rgba(201,123,63,0.6)`;
+        grid.appendChild(v);
+      }
+      win.appendChild(grid);
+    }
+  }
+
+  function setActiveKernelCells(){
+    // highlight current kernel cells in the matrix (just the 3x3, we don't sync position)
+    // keep simple: remove old actives
+  }
+
+  function paintDst(){
+    // Paint the full output as a dimmed "preview", and brighten the visited region
+    for (let i=0; i<dstId.data.length; i+=4){
+      dstId.data[i]=0; dstId.data[i+1]=0; dstId.data[i+2]=0; dstId.data[i+3]=255;
+    }
+    for (let y=0; y<222; y++){
+      for (let x=0; x<222; x++){
+        const v = fullOut[y*222 + x];
+        const t = (v - min) / (max - min || 1);
+        const idx = (y*222 + x) * 4;
+        const visited = (y < convAnim.y) || (y === convAnim.y && x <= convAnim.x);
+        if (visited){
+          const g = Math.round(t * 255);
+          dstId.data[idx] = g; dstId.data[idx+1] = g; dstId.data[idx+2] = g;
+        } else {
+          // faint preview of the full result
+          const baseG = Math.round(t * 55);
+          dstId.data[idx] = baseG; dstId.data[idx+1] = baseG; dstId.data[idx+2] = baseG;
+        }
+      }
+    }
+    dstCtx.putImageData(dstId, 0, 0);
+    // current value readout
+    const v = fullOut[convAnim.y*222 + convAnim.x];
+    document.getElementById('outputVal').textContent = v.toFixed(2);
+    // progress
+    const done = convAnim.y * 222 + convAnim.x + 1;
+    const total = 222*222;
+    const pct = ((done/total)*100).toFixed(1);
+    document.getElementById('outSize').textContent = `${pct}% · 222×222`;
+  }
+
+  function step(){
+    if (convAnim.x < 221){
+      convAnim.x++;
+    } else if (convAnim.y < 221){
+      convAnim.x = 0; convAnim.y++;
+    } else {
+      stop(); return;
+    }
+    placeWindow();
+    paintDst();
+  }
+
+  function play(){
+    if (convAnim.playing) return;
+    convAnim.playing = true;
+    document.getElementById('btnPlayLbl').textContent = 'Pausa';
+    const loop = (t)=>{
+      if (!convAnim.playing) return;
+      if (t - convAnim.lastFrame > 1000/convAnim.speed){
+        convAnim.lastFrame = t;
+        step();
+        if (convAnim.x===0 && convAnim.y===221){ stop(); return; }
+      }
+      convAnim.timer = requestAnimationFrame(loop);
+    };
+    convAnim.timer = requestAnimationFrame(loop);
+  }
+  function stop(){
+    convAnim.playing = false;
+    document.getElementById('btnPlayLbl').textContent = 'Reproducir';
+    if (convAnim.timer) cancelAnimationFrame(convAnim.timer);
+  }
+  function reset(){
+    stop();
+    convAnim.x = 110; convAnim.y = 80;
+    placeWindow(); paintDst();
+  }
+
+  document.getElementById('btnPlay').addEventListener('click', ()=> convAnim.playing ? stop() : play());
+  document.getElementById('btnStep').addEventListener('click', ()=>{ stop(); step(); });
+  document.getElementById('btnReset').addEventListener('click', reset);
+  document.getElementById('speedRange').addEventListener('input', e=>{
+    convAnim.speed = parseInt(e.target.value);
+  });
+  window.addEventListener('resize', placeWindow);
+
+  // initial paint
+  setTimeout(()=>{ placeWindow(); paintDst(); }, 60);
+}
+
+/* ============================================================
+   CHAPTER 4: feature map grid
+============================================================ */
+function initFeatureMaps(){
+  const grid = document.getElementById('fmGrid');
+  grid.innerHTML = '';
+  FM_KERNELS.forEach((spec, i)=>{
+    const tile = document.createElement('div');
+    tile.className = 'fm-tile' + (i===0?' active':'');
+    tile.innerHTML = `<canvas width="222" height="222"></canvas><div class="tag">${spec.name}</div><div class="val">0.${i+12}</div>`;
+    const cv = tile.querySelector('canvas');
+    const out = conv2d(grayMatrix, 224, 224, spec.k, 222, 222);
+    const id = toImageData(out, 222, 222, 'norm');
+    cv.getContext('2d').putImageData(id, 0, 0);
+    tile.addEventListener('click', ()=>{
+      [...grid.children].forEach(t=>t.classList.remove('active'));
+      tile.classList.add('active');
+      // show this kernel in main chapter-2
+      const matchKey = Object.entries(KERNELS).find(([k,v])=>{
+        return JSON.stringify(v.k) === JSON.stringify(spec.k);
+      });
+      if (matchKey){
+        [...document.querySelectorAll('#kernelPicker .kpill')].forEach(x=>{
+          x.classList.toggle('active', x.dataset.k === matchKey[0]);
+        });
+        currentKernel = KERNELS[matchKey[0]];
+        renderKernelMatrix();
+        renderKernelResult();
+        // scroll to chapter 2
+        document.getElementById('cap-2').scrollIntoView({behavior:'smooth', block:'start'});
+      }
+    });
+    grid.appendChild(tile);
+  });
+}
+
+/* ============================================================
+   CHAPTER 5: ReLU before / after
+============================================================ */
+function initRelu(){
+  const out = conv2d(grayMatrix, 224, 224, KERNELS.vedge.k, 222, 222);
+  const idB = toImageData(out, 222, 222, 'signed');
+  document.getElementById('reluBefore').getContext('2d').putImageData(idB, 0, 0);
+
+  const r2 = relu(out.slice());
+  const idA = toImageData(r2, 222, 222, 'norm');
+  document.getElementById('reluAfter').getContext('2d').putImageData(idA, 0, 0);
+}
+
+/* ============================================================
+   CHAPTER 6: max pooling
+============================================================ */
+function initPooling(){
+  const cv1 = document.getElementById('poolIn');
+  const out = conv2d(grayMatrix, 224, 224, KERNELS.sharpen.k, 222, 222);
+  const r2 = relu(out);
+  const id1 = toImageData(r2, 222, 222, 'norm');
+  cv1.getContext('2d').putImageData(id1, 0, 0);
+
+  const pooled = maxPool2(r2, 222, 222);
+  // render pooled into 222x222 canvas (upscaled for visibility)
+  const cv2 = document.getElementById('poolOut');
+  const ctx2 = cv2.getContext('2d');
+  ctx2.imageSmoothingEnabled = false;
+  const tmp = document.createElement('canvas');
+  tmp.width = pooled.w; tmp.height = pooled.h;
+  const id2 = toImageData(pooled.data, pooled.w, pooled.h, 'norm');
+  tmp.getContext('2d').putImageData(id2, 0, 0);
+  ctx2.drawImage(tmp, 0, 0, 222, 222);
+}
+
+/* ============================================================
+   CHAPTER 7: layer hierarchy
+============================================================ */
+const LAYER_SPECS = [
+  { name:"Nivel 1", sub:"Líneas y colores", kernel:[[-1,0,1],[-2,0,2],[-1,0,1]], pool:false },
+  { name:"Nivel 2", sub:"Texturas y curvas", kernel:[[-1,-1,-1],[2,2,2],[-1,-1,-1]], pool:false },
+  { name:"Nivel 3", sub:"Partes (orejas, ojos)", kernel:[[-1,-1,0],[-1,0,1],[0,1,1]], pool:true },
+  { name:"Nivel 4", sub:"El gato completo", kernel:[[0,-1,0],[-1,4,-1],[0,-1,0]], pool:true }
+];
+
+function initLayers(){
+  const container = document.getElementById('layersDemo');
+  container.innerHTML = '';
+  let cur = grayMatrix;
+  let curW = 224, curH = 224;
+  LAYER_SPECS.forEach((spec, idx)=>{
+    const feat = conv2d(cur, curW, curH, spec.kernel, curW-2, curH-2);
+    const r = relu(feat);
+    let w = curW-2, h = curH-2;
+    let d = r;
+    if (spec.pool){
+      const p = maxPool2(r, w, h);
+      d = p.data; w = p.w; h = p.h;
+    }
+    cur = d; curW = w; curH = h;
+
+    const card = document.createElement('div');
+    card.className = 'layer-card';
+    card.innerHTML = `
+      <h4>${spec.name} <span class="num">${idx+1}/4</span></h4>
+      <div class="canvas-wrap">
+        <canvas width="${w}" height="${h}"></canvas>
+        <div class="label">${w}×${h}</div>
+      </div>
+      <div class="meta">
+        <div><b>Reconoce</b> ${spec.sub}</div>
+        <div><b>Tamaño</b> ${w}×${h}${spec.pool?' · más chico':''}</div>
+      </div>
+    `;
+    const cv = card.querySelector('canvas');
+    const id = toImageData(d, w, h, 'norm');
+    cv.getContext('2d').putImageData(id, 0, 0);
+    container.appendChild(card);
+  });
+}
+
+/* ============================================================
+   CHAPTER 8: classification bars
+============================================================ */
+const PREDICTIONS = [
+  { name:"Gato atigrado",     sub:"tabby cat",        pct:97.3, winner:true },
+  { name:"Gato doméstico",    sub:"domestic cat",     pct:1.42, alt:true },
+  { name:"Gato montés",       sub:"lynx",             pct:0.61, alt:true },
+  { name:"Gato persa",        sub:"Persian cat",      pct:0.34, alt:true },
+  { name:"Puma",              sub:"cougar",           pct:0.12, alt:true },
+  { name:"Mapache",           sub:"raccoon",          pct:0.08, gray:true },
+  { name:"Zorro",             sub:"fox",              pct:0.05, gray:true },
+  { name:"Conejo",            sub:"rabbit",           pct:0.03, gray:true }
+];
+
+function initClassify(){
+  // final feature vector (decorative 1x1000)
+  const cvF = document.getElementById('finalFeat');
+  const ctxF = cvF.getContext('2d');
+  const bars = 1000;
+  // build random distribution centered around "cat" bins
+  const data = new Float32Array(bars);
+  for (let i=0; i<bars; i++){
+    // pseudo-random peaks
+    const v = Math.abs(Math.sin(i*0.13) * Math.cos(i*0.07)) + (i>240&&i<260 ? 0.5 : 0);
+    data[i] = v;
+  }
+  // draw as horizontal bars in a 224x40 canvas
+  const bw = 224 / bars;
+  for (let i=0; i<bars; i++){
+    const h = data[i] * 40;
+    const t = data[i];
+    // color based on intensity
+    const r = Math.round(201 * t);
+    const g = Math.round(123 * t);
+    const b = Math.round(63 * t);
+    ctxF.fillStyle = `rgb(${r},${g},${b})`;
+    ctxF.fillRect(i*bw, 40-h, Math.max(0.5, bw-0.2), h);
+  }
+
+  // deep map — generate a multi-channel feature map: apply several different
+  // convolutions and stack them as RGB channels to suggest abstract deep features
+  const deepCv = document.getElementById('deepMap');
+  const dctx = deepCv.getContext('2d');
+  // build three "deep channels" by repeatedly convolving
+  let ch1 = grayMatrix.slice();
+  let ch2 = grayMatrix.slice();
+  let ch3 = grayMatrix.slice();
+  // random-but-deterministic seed-ish kernels
+  const seedK = (s) => {
+    let v = s;
+    return [[ ((v=v*9301+49297)%233280)/233280 - 0.5,
+              ((v=v*9301+49297)%233280)/233280 - 0.5,
+              ((v=v*9301+49297)%233280)/233280 - 0.5],
+            [ ((v=v*9301+49297)%233280)/233280 - 0.5,
+              ((v=v*9301+49297)%233280)/233280 - 0.5,
+              ((v=v*9301+49297)%233280)/233280 - 0.5],
+            [ ((v=v*9301+49297)%233280)/233280 - 0.5,
+              ((v=v*9301+49297)%233280)/233280 - 0.5,
+              ((v=v*9301+49297)%233280)/233280 - 0.5]];
+  };
+  // do 3 rounds of conv+relu+pool on each channel with different kernels
+  for (let round = 0; round < 3; round++){
+    const k1 = seedK(7 + round*3);
+    const k2 = seedK(13 + round*3);
+    const k3 = seedK(19 + round*3);
+    ch1 = conv2d(ch1, Math.sqrt(ch1.length)|0, Math.sqrt(ch1.length)|0, k1, (Math.sqrt(ch1.length)|0)-2, (Math.sqrt(ch1.length)|0)-2);
+    ch1 = relu(ch1);
+    const p1 = maxPool2(ch1, (Math.sqrt(ch1.length)|0), (Math.sqrt(ch1.length)|0));
+    ch1 = p1.data;
+    const w1 = p1.w;
+    ch2 = conv2d(ch2, Math.sqrt(ch2.length)|0, Math.sqrt(ch2.length)|0, k2, (Math.sqrt(ch2.length)|0)-2, (Math.sqrt(ch2.length)|0)-2);
+    ch2 = relu(ch2);
+    const p2 = maxPool2(ch2, (Math.sqrt(ch2.length)|0), (Math.sqrt(ch2.length)|0));
+    ch2 = p2.data;
+    const w2 = p2.w;
+    ch3 = conv2d(ch3, Math.sqrt(ch3.length)|0, Math.sqrt(ch3.length)|0, k3, (Math.sqrt(ch3.length)|0)-2, (Math.sqrt(ch3.length)|0)-2);
+    ch3 = relu(ch3);
+    const p3 = maxPool2(ch3, (Math.sqrt(ch3.length)|0), (Math.sqrt(ch3.length)|0));
+    ch3 = p3.data;
+    const w3 = p3.w;
+    // pad smaller channels to match largest
+    const targetW = Math.max(w1, w2, w3);
+    const pad = (arr, w, target) => {
+      if (w === target) return arr;
+      const padded = new Float32Array(target*target);
+      for (let y=0; y<w; y++) for (let x=0; x<w; x++) padded[y*target+x] = arr[y*w+x];
+      return padded;
+    };
+    ch1 = pad(ch1, w1, targetW);
+    ch2 = pad(ch2, w2, targetW);
+    ch3 = pad(ch3, w3, targetW);
+    // also resize source
+    if (round < 2){
+      const tw = targetW;
+      ch1 = pad(conv2d(ch1, tw, tw, [[0,0,0],[0,1,0],[0,0,0]], tw-2, tw-2), tw-2, tw);
+      ch2 = pad(conv2d(ch2, tw, tw, [[0,0,0],[0,1,0],[0,0,0]], tw-2, tw-2), tw-2, tw);
+      ch3 = pad(conv2d(ch3, tw, tw, [[0,0,0],[0,1,0],[0,0,0]], tw-2, tw-2), tw-2, tw);
+    }
+  }
+  // At this point each channel is ~28x28 = 784. Let's just stack and normalize
+  const normChan = (arr) => {
+    let mn=Infinity, mx=-Infinity;
+    for (let i=0;i<arr.length;i++){ if(arr[i]<mn)mn=arr[i]; if(arr[i]>mx)mx=arr[i]; }
+    return arr.map(v => (v-mn)/(mx-mn||1));
+  };
+  const c1 = normChan(ch1), c2 = normChan(ch2), c3 = normChan(ch3);
+  const W = Math.sqrt(c1.length)|0;
+  // composite into 7x7 by taking spatial mean of 4x4 blocks
+  const OUT = 14;
+  const out = dctx.createImageData(OUT, OUT);
+  for (let oy=0; oy<OUT; oy++){
+    for (let ox=0; ox<OUT; ox++){
+      let r=0, g=0, b=0, n=0;
+      const sy0 = Math.floor(oy*W/OUT), sy1 = Math.floor((oy+1)*W/OUT);
+      const sx0 = Math.floor(ox*W/OUT), sx1 = Math.floor((ox+1)*W/OUT);
+      for (let sy=sy0; sy<sy1; sy++) for (let sx=sx0; sx<sx1; sx++){
+        const i = sy*W+sx;
+        r += c1[i]; g += c2[i]; b += c3[i]; n++;
+      }
+      r/=n; g/=n; b/=n;
+      // boost contrast
+      r = Math.pow(r, 0.6); g = Math.pow(g, 0.6); b = Math.pow(b, 0.6);
+      const idx = (oy*OUT+ox)*4;
+      out.data[idx]   = Math.round(r*220 + 30);
+      out.data[idx+1] = Math.round(g*180 + 20);
+      out.data[idx+2] = Math.round(b*140 + 15);
+      out.data[idx+3] = 255;
+    }
+  }
+  const tmp = document.createElement('canvas');
+  tmp.width = OUT; tmp.height = OUT;
+  tmp.getContext('2d').putImageData(out, 0, 0);
+  dctx.imageSmoothingEnabled = false;
+  dctx.fillStyle = '#0e0f12';
+  dctx.fillRect(0,0,224,224);
+  dctx.drawImage(tmp, 0, 0, 224, 224);
+
+  // bars
+  const barsEl = document.getElementById('clsBars');
+  barsEl.innerHTML = '';
+  PREDICTIONS.forEach((p, idx)=>{
+    const row = document.createElement('div');
+    row.className = 'cls-row';
+    row.innerHTML = `
+      <div class="name ${p.winner?'winner':''}">${p.name}<small>${p.sub}</small></div>
+      <div class="bar-bg"><div class="bar-fill ${p.alt?'alt':''} ${p.gray?'gray':''}" data-w="${p.pct}"></div></div>
+      <div class="pct">${p.pct.toFixed(2)}%</div>
+    `;
+    barsEl.appendChild(row);
+  });
+  // animate
+  setTimeout(()=>{
+    [...barsEl.querySelectorAll('.bar-fill')].forEach(b=>{
+      b.style.width = b.dataset.w + '%';
+    });
+  }, 200);
+}
+
+/* ============================================================
+   Boot
+============================================================ */
+async function boot(){
+  await loadCat();
+  prepareData();
+  initHero();
+  initExplorer();
+  renderKernelMatrix();
+  renderKernelResult();
+  initKernelPicker();
+  initConvStage();
+  initFeatureMaps();
+  initRelu();
+  initPooling();
+  initLayers();
+  initClassify();
+}
+boot().catch(e=>{
+  console.error(e);
+  document.body.innerHTML = '<div style="padding:40px;font-family:monospace;color:#b06367">Error al cargar: '+e.message+'</div>';
+});
+</script>
+</body>
+</html>

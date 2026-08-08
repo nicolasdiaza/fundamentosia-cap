@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cómo una máquina entiende el texto</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <style>
+    :root {
+      --bg: #fafafa;
+      --surface: #ffffff;
+      --border: #e4e4e7;
+      --border-soft: #f4f4f5;
+      --text: #14171e;
+      --text-muted: #3a4256;
+      --text-soft: #71717a;
+      --text-faint: #a1a1aa;
+      --primary: #6366f1;
+      --neutral: #a1a1aa;
+      --c-royalty: #6366f1;
+      --c-animals: #10b981;
+      --c-colors: #f59e0b;
+      --c-countries: #3b82f6;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+    body {
+      font-family: 'Outfit', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.55;
+      -webkit-font-smoothing: antialiased;
+      min-height: 100dvh;
+    }
+
+    .container {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 56px 32px 80px;
+    }
+
+    .hero { margin-bottom: 40px; }
+    .eyebrow {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--primary);
+      margin-bottom: 14px;
+    }
+    h1 {
+      font-size: 38px;
+      font-weight: 600;
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+      margin: 0 0 16px;
+      max-width: 760px;
+      color: var(--text);
+    }
+    .lede {
+      font-size: 17px;
+      color: var(--text-muted);
+      max-width: 680px;
+      margin: 0;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 24px;
+    }
+    .btn {
+      font-family: 'Outfit', sans-serif;
+      font-size: 14px;
+      font-weight: 500;
+      padding: 9px 14px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      cursor: pointer;
+      transition: all 0.15s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn:hover { border-color: #d4d4d8; background: #fafafa; }
+    .btn.active {
+      background: var(--text);
+      color: white;
+      border-color: var(--text);
+    }
+    .btn .num {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      font-weight: 500;
+      color: var(--text-soft);
+      background: var(--bg);
+      padding: 3px 7px;
+      border-radius: 5px;
+      border: 1px solid var(--border-soft);
+    }
+    .btn.active .num {
+      color: var(--text);
+      background: rgba(255,255,255,0.18);
+      border-color: transparent;
+    }
+
+    .viz-container {
+      position: relative;
+      width: 100%;
+    }
+    #viz {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    .word-dot circle {
+      transition: r 0.2s ease, fill 0.6s ease, filter 0.2s ease;
+    }
+    .word-dot {
+      cursor: default;
+      transition: opacity 0.6s ease;
+    }
+    .word-dot .word-label {
+      font-family: 'Outfit', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      fill: var(--text);
+      pointer-events: none;
+      user-select: none;
+      transition: opacity 0.3s ease, font-weight 0.2s ease;
+    }
+    .word-dot.dimmed { opacity: 0.18; }
+    .word-dot.highlighted circle {
+      filter: drop-shadow(0 0 8px currentColor);
+    }
+    .word-dot.highlighted .word-label {
+      font-weight: 700;
+    }
+
+    .cluster-label {
+      font-family: 'Outfit', sans-serif;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      pointer-events: none;
+      user-select: none;
+      transition: opacity 0.5s ease;
+    }
+
+    .analogy-arrow {
+      fill: none;
+      stroke-width: 2;
+      stroke-linecap: round;
+      opacity: 0;
+      transition: opacity 0.4s ease;
+    }
+    .analogy-arrow.visible { opacity: 1; }
+
+    .analogy-text {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      font-weight: 500;
+      opacity: 0;
+      transition: opacity 0.4s ease 0.2s;
+    }
+    .analogy-text.visible { opacity: 1; }
+
+    /* Contextual embedding (step 4) */
+    .ctx-banco {
+      opacity: 0;
+      transition: opacity 0.5s ease;
+    }
+    .ctx-banco.ctx-appeared { opacity: 1; }
+    .ctx-banco circle {
+      transition: r 0.4s ease, fill 0.4s ease, filter 0.4s ease;
+    }
+    .ctx-banco.ctx-appeared circle { filter: drop-shadow(0 0 14px #ec4899); }
+    .ctx-sentence {
+      font-family: 'Outfit', sans-serif;
+      font-size: 14px;
+      fill: var(--text);
+      opacity: 0;
+      transition: opacity 0.5s ease;
+    }
+    .ctx-sentence.visible { opacity: 1; }
+    .ctx-sentence .ctx-word { font-weight: 700; fill: #ec4899; }
+    .ctx-arrow {
+      fill: none;
+      stroke: #ec4899;
+      stroke-width: 1.5;
+      stroke-dasharray: 4 4;
+      opacity: 0;
+      transition: opacity 0.5s ease;
+    }
+    .ctx-arrow.visible { opacity: 0.7; }
+    .ctx-tag {
+      font-family: 'Outfit', sans-serif;
+      font-size: 11px;
+      font-weight: 600;
+      fill: #ec4899;
+      opacity: 0;
+      transition: opacity 0.5s ease;
+    }
+    .ctx-tag.visible { opacity: 1; }
+    .ctx-highlight-box {
+      fill: #ffffff;
+      fill-opacity: 0.94;
+      stroke: #ec4899;
+      stroke-width: 1.5;
+      stroke-dasharray: 6 4;
+      rx: 10;
+      opacity: 0;
+      transition: opacity 0.6s ease;
+    }
+    .ctx-highlight-box.visible { opacity: 1; }
+    .ctx-main-label {
+      font-family: 'Outfit', sans-serif;
+      font-size: 18px;
+      font-weight: 700;
+      fill: #ec4899;
+      opacity: 0;
+      transition: opacity 0.6s ease;
+    }
+    .ctx-main-label.visible { opacity: 1; }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 18px;
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border-soft);
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+    .legend-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      transition: background 0.4s ease;
+    }
+
+    .explanation {
+      margin-top: 24px;
+      padding: 24px 28px;
+      border-radius: 12px;
+      background: #fafafa;
+      border: 1px solid var(--border);
+      min-height: 110px;
+    }
+    .explanation h3 {
+      font-size: 16px;
+      font-weight: 600;
+      margin: 0 0 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--text);
+    }
+    .explanation p {
+      font-size: 15px;
+      color: var(--text-muted);
+      margin: 0 0 10px;
+    }
+    .explanation p:last-child { margin-bottom: 0; }
+    .explanation code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      background: white;
+      padding: 2px 7px;
+      border-radius: 5px;
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+    .explanation strong { color: var(--text); font-weight: 600; }
+
+    .footer-note {
+      margin-top: 36px;
+      font-size: 12px;
+      color: var(--text-faint);
+      text-align: center;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    @media (max-width: 768px) {
+      .container { padding: 32px 20px 60px; }
+      h1 { font-size: 28px; }
+      .card { padding: 20px; }
+      .explanation { padding: 18px 20px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="hero">
+      <div class="eyebrow">Visualización · capacitación de IA</div>
+      <h1>Cómo una máquina entiende el texto</h1>
+      <p class="lede">Empezamos con palabras mezcladas al azar. Después de leer millones de textos, el modelo aprende a colocar las palabras con significado similar cerca. Y descubre que las <em>diferencias</em> entre ellas también tienen forma. Haz clic en cada paso.</p>
+    </div>
+
+    <div class="card">
+      <div class="controls" id="controls">
+        <button class="btn active" data-step="0"><span class="num">1</span> Palabras mezcladas</button>
+        <button class="btn" data-step="1"><span class="num">2</span> Después del entrenamiento</button>
+        <button class="btn" data-step="2"><span class="num">3</span> La analogía vectorial</button>
+        <button class="btn" data-step="3"><span class="num">4</span> Cómo lo usan los LLMs</button>
+      </div>
+
+      <div class="viz-container">
+        <svg id="viz" viewBox="0 0 800 520" preserveAspectRatio="xMidYMid meet"></svg>
+      </div>
+
+      <div class="legend" id="legend" style="opacity: 0.5;">
+        <div class="legend-item"><div class="legend-dot" id="leg-royalty" style="background: #a1a1aa"></div>Familia y nobleza</div>
+        <div class="legend-item"><div class="legend-dot" id="leg-animals" style="background: #a1a1aa"></div>Animales</div>
+        <div class="legend-item"><div class="legend-dot" id="leg-colors" style="background: #a1a1aa"></div>Colores</div>
+        <div class="legend-item"><div class="legend-dot" id="leg-countries" style="background: #a1a1aa"></div>Países y ciudades</div>
+      </div>
+    </div>
+
+    <div class="explanation" id="explanation"></div>
+
+    <div class="footer-note">Espacio conceptual · Los embeddings reales tienen cientos de dimensiones, no dos</div>
+  </div>
+
+  <script>
+    // ─── Data ───
+    // Each word has a "learned" position (x, y) — the meaningful arrangement
+    // and a "random" position (rx, ry) — the initial state before training
+    const words = [
+      // Royalty / family — grid layout preserves the "gender" vector (left → right)
+      { word: 'rey',       cluster: 'royalty', x: 215, y: 100, rx: 498, ry: 108 },
+      { word: 'reina',     cluster: 'royalty', x: 315, y: 110, rx: 243, ry: 171 },
+      { word: 'príncipe',  cluster: 'royalty', x: 205, y: 160, rx: 566, ry: 317 },
+      { word: 'princesa',  cluster: 'royalty', x: 325, y: 170, rx: 675, ry: 128 },
+      { word: 'hombre',    cluster: 'royalty', x: 220, y: 220, rx: 345, ry: 110 },
+      { word: 'mujer',     cluster: 'royalty', x: 315, y: 230, rx: 203, ry: 262 },
+      { word: 'niño',      cluster: 'royalty', x: 205, y: 270, rx:  69, ry: 164 },
+      { word: 'niña',      cluster: 'royalty', x: 325, y: 280, rx: 505, ry: 274 },
+
+      // Animals — organic cluster, no axis
+      { word: 'perro',     cluster: 'animals', x: 525, y:  95, rx: 720, ry: 208 },
+      { word: 'gato',      cluster: 'animals', x: 605, y: 105, rx: 643, ry: 293 },
+      { word: 'león',      cluster: 'animals', x: 510, y: 150, rx: 425, ry: 411 },
+      { word: 'tigre',     cluster: 'animals', x: 625, y: 145, rx: 315, ry: 277 },
+      { word: 'lobo',      cluster: 'animals', x: 550, y: 195, rx: 309, ry: 167 },
+      { word: 'águila',    cluster: 'animals', x: 680, y: 195, rx: 237, ry: 400 },
+      { word: 'paloma',    cluster: 'animals', x: 705, y: 240, rx: 170, ry: 333 },
+      { word: 'ballena',   cluster: 'animals', x: 565, y: 270, rx: 743, ry: 305 },
+
+      // Colors — bottom-left
+      { word: 'rojo',      cluster: 'colors', x: 115, y: 370, rx: 440, ry: 319 },
+      { word: 'azul',      cluster: 'colors', x: 190, y: 365, rx: 210, ry: 110 },
+      { word: 'verde',     cluster: 'colors', x: 155, y: 400, rx: 443, ry: 184 },
+      { word: 'amarillo',  cluster: 'colors', x: 245, y: 395, rx: 114, ry: 115 },
+      { word: 'negro',     cluster: 'colors', x: 110, y: 435, rx: 604, ry: 235 },
+      { word: 'blanco',    cluster: 'colors', x: 200, y: 440, rx: 730, ry: 375 },
+      { word: 'rosa',      cluster: 'colors', x: 160, y: 475, rx:  58, ry: 331 },
+      { word: 'morado',    cluster: 'colors', x: 260, y: 470, rx: 128, ry: 239 },
+
+      // Countries / cities — bottom-right
+      { word: 'España',       cluster: 'countries', x: 490, y: 370, rx:  64, ry: 397 },
+      { word: 'México',       cluster: 'countries', x: 565, y: 370, rx: 665, ry: 366 },
+      { word: 'Argentina',    cluster: 'countries', x: 645, y: 365, rx: 586, ry: 141 },
+      { word: 'Francia',      cluster: 'countries', x: 490, y: 410, rx: 383, ry: 276 },
+      { word: 'Madrid',       cluster: 'countries', x: 525, y: 445, rx: 381, ry: 351 },
+      { word: 'Buenos Aires', cluster: 'countries', x: 615, y: 440, rx: 315, ry: 415 },
+      { word: 'París',        cluster: 'countries', x: 540, y: 480, rx: 160, ry: 407 },
+      { word: 'Lima',         cluster: 'countries', x: 615, y: 480, rx: 520, ry: 196 },
+    ];
+
+    const clusterColors = {
+      royalty: '#6366f1',
+      animals: '#10b981',
+      colors: '#f59e0b',
+      countries: '#3b82f6',
+    };
+    const NEUTRAL = '#a1a1aa';
+
+    const clusterLabels = {
+      royalty:   { x: 130, y: 70,  name: 'FAMILIA · NOBLEZA' },
+      animals:   { x: 525, y: 65,  name: 'ANIMALES' },
+      colors:    { x: 100, y: 345, name: 'COLORES' },
+      countries: { x: 490, y: 345, name: 'LUGARES' },
+    };
+
+    const explanations = {
+      0: {
+        title: '1 · El modelo empieza sin saber nada',
+        body: '<p>Al inicio, las palabras están <strong>mezcladas al azar</strong>. Para el modelo, "perro" y "ballena" están tan cerca como "perro" y "democracia". No hay estructura, no hay significado.</p><p>Esto es lo que tendrías si inicializas los vectores de cualquier forma: solo ruido.</p>'
+      },
+      1: {
+        title: '2 · Después de leer millones de textos',
+        body: '<p>El modelo ajusta los vectores usando una idea simple: <strong>las palabras que aparecen en contextos similares deberían quedar cerca</strong>.</p><p>Tras suficientes lecturas, "perro" y "gato" se atraen, "España" y "Francia" se atraen, los colores se agrupan, etc. <strong>Esta estructura no se programa — emerge del entrenamiento.</strong></p>'
+      },
+      2: {
+        title: '3 · Las flechas paralelas: vectores con significado',
+        body: '<p>La parte más sorprendente: las <strong>diferencias</strong> entre palabras también son vectores, y capturan relaciones reales.</p><p>El vector <code>rey</code> → <code>reina</code> apunta casi en la misma dirección que <code>hombre</code> → <code>mujer</code>. Ambos codifican la misma idea: <em>"género femenino"</em>.</p><p>Por eso: <code>rey</code> − <code>hombre</code> + <code>mujer</code> ≈ <code>reina</code></p><p>El modelo puede <strong>razonar con geometría</strong>.</p>'
+      },
+      3: {
+        title: '4 · Los LLMs leen el contexto',
+        body: '<p>En un embedding simple, cada palabra tiene <strong>un solo vector</strong>. Pero en un LLM, la <strong>misma palabra</strong> puede tener vectores <em>completamente distintos</em> según la frase donde aparece.</p><p>Observa: la palabra <strong style="color:#ec4899">"banco"</strong> en la pantalla — está en <strong>dos lugares opuestos</strong> del espacio, dependiendo del contexto de la oración.</p><p>El LLM "lee" toda la frase antes de decidir dónde colocar cada palabra. Eso es lo que le permite entender dobles sentidos, ironía y ambigüedad.</p>'
+      }
+    };
+
+    // ─── SVG setup ───
+    const svg = d3.select('#viz');
+    const W = 800, H = 520;
+
+    // Define arrow markers once
+    const defs = svg.append('defs');
+    ['royalty', 'common', 'child'].forEach(id => {
+      defs.append('marker')
+        .attr('id', `arrow-${id}`)
+        .attr('viewBox', '0 0 10 10')
+        .attr('refX', 9)
+        .attr('refY', 5)
+        .attr('markerWidth', 7)
+        .attr('markerHeight', 7)
+        .attr('orient', 'auto-start-reverse')
+        .append('path')
+        .attr('d', 'M 0 0 L 10 5 L 0 10 z')
+        .attr('fill', '#6366f1');
+    });
+
+    // Layer groups
+    const arrowsLayer  = svg.append('g').attr('class', 'arrows-layer');
+    const labelsLayer  = svg.append('g').attr('class', 'cluster-labels-layer');
+    const wordsLayer   = svg.append('g').attr('class', 'words-layer');
+    const analogyText  = svg.append('g').attr('class', 'analogy-text-layer');
+    const ctxLayer     = svg.append('g').attr('class', 'context-layer');
+
+    // Cluster labels
+    Object.entries(clusterLabels).forEach(([key, info]) => {
+      labelsLayer.append('text')
+        .attr('class', 'cluster-label')
+        .attr('x', info.x)
+        .attr('y', info.y)
+        .attr('fill', clusterColors[key])
+        .attr('opacity', 0)
+        .text(info.name);
+    });
+
+    // Words — start in random positions, gray color
+    const wordElements = wordsLayer.selectAll('g.word-dot')
+      .data(words, d => d.word)
+      .enter()
+      .append('g')
+      .attr('class', 'word-dot')
+      .attr('transform', d => `translate(${d.rx}, ${d.ry})`)
+      .style('color', d => clusterColors[d.cluster]);
+
+    wordElements.append('circle')
+      .attr('r', 6)
+      .attr('fill', NEUTRAL);
+
+    wordElements.append('text')
+      .attr('class', 'word-label')
+      .attr('x', 10)
+      .attr('y', 4)
+      .attr('text-anchor', 'start')
+      .text(d => d.word);
+
+    // ─── Contextual layer (used in step 4 only) ───
+    // Two "banco" markers, one in upper-left, one in lower-right
+    // Each with a sentence (with "banco" highlighted) and a contextual tag
+
+    // Main title across the top center
+    const ctxTitle = ctxLayer.append('text')
+      .attr('class', 'ctx-main-label')
+      .attr('x', 400)
+      .attr('y', 48)
+      .attr('text-anchor', 'middle')
+      .text('Misma palabra → distintos vectores');
+
+    // ── Context 1: banco (asiento / bench) — upper-left
+    const ctx1 = ctxLayer.append('g').attr('class', 'ctx-group');
+
+    ctx1.append('rect')
+      .attr('class', 'ctx-highlight-box')
+      .attr('x', 40).attr('y', 95)
+      .attr('width', 340).attr('height', 130);
+
+    // Sentence with highlighted word — use tspan for the pink "banco"
+    ctx1.append('text')
+      .attr('class', 'ctx-sentence')
+      .attr('x', 60).attr('y', 140)
+      .html('Me senté en un <tspan class="ctx-word">banco</tspan> del parque.');
+
+    // Arrow from end of "banco" word to its dot
+    // "banco" sits roughly between x=160 and x=200 on the sentence line
+    ctx1.append('line')
+      .attr('class', 'ctx-arrow')
+      .attr('x1', 210).attr('y1', 145)
+      .attr('x2', 270).attr('y2', 190);
+
+    // The contextual dot
+    const ctx1Dot = ctx1.append('g').attr('class', 'ctx-banco').attr('transform', 'translate(290, 195)');
+    ctx1Dot.append('circle')
+      .attr('r', 9)
+      .attr('fill', '#ec4899');
+    ctx1Dot.append('text')
+      .attr('class', 'word-label')
+      .attr('x', 12).attr('y', 4)
+      .attr('text-anchor', 'start')
+      .attr('fill', '#ec4899')
+      .attr('font-weight', '700')
+      .text('banco');
+
+    // Contextual tag
+    ctx1.append('text')
+      .attr('class', 'ctx-tag')
+      .attr('x', 200).attr('y', 215)
+      .text('(asiento — mueble)');
+
+    // ── Context 2: banco (financiero / bank) — lower-right
+    const ctx2 = ctxLayer.append('g').attr('class', 'ctx-group');
+
+    ctx2.append('rect')
+      .attr('class', 'ctx-highlight-box')
+      .attr('x', 420).attr('y', 295)
+      .attr('width', 340).attr('height', 130);
+
+    ctx2.append('text')
+      .attr('class', 'ctx-sentence')
+      .attr('x', 440).attr('y', 340)
+      .html('Fui al <tspan class="ctx-word">banco</tspan> a sacar dinero.');
+
+    ctx2.append('line')
+      .attr('class', 'ctx-arrow')
+      .attr('x1', 540).attr('y1', 345)
+      .attr('x2', 620).attr('y2', 390);
+
+    const ctx2Dot = ctx2.append('g').attr('class', 'ctx-banco').attr('transform', 'translate(650, 395)');
+    ctx2Dot.append('circle')
+      .attr('r', 9)
+      .attr('fill', '#ec4899');
+    ctx2Dot.append('text')
+      .attr('class', 'word-label')
+      .attr('x', 12).attr('y', 4)
+      .attr('text-anchor', 'start')
+      .attr('fill', '#ec4899')
+      .attr('font-weight', '700')
+      .text('banco');
+
+    ctx2.append('text')
+      .attr('class', 'ctx-tag')
+      .attr('x', 560).attr('y', 415)
+      .text('(banco — finanzas)');
+
+    // Helper to show/hide the entire contextual layer
+    function setContextVisible(visible) {
+      const cls = visible ? 'visible' : '';
+      ctxTitle.classed('visible', visible);
+      ctx1.selectAll('.ctx-highlight-box, .ctx-sentence, .ctx-arrow, .ctx-tag').classed('visible', visible);
+      ctx1.selectAll('.ctx-banco').classed('ctx-appeared', visible);
+      ctx2.selectAll('.ctx-highlight-box, .ctx-sentence, .ctx-arrow, .ctx-tag').classed('visible', visible);
+      ctx2.selectAll('.ctx-banco').classed('ctx-appeared', visible);
+    }
+
+    // ─── Step logic ───
+    const buttons = document.querySelectorAll('.btn[data-step]');
+    const explanationEl = document.getElementById('explanation');
+    const legendEl = document.getElementById('legend');
+    const legendDots = {
+      royalty: document.getElementById('leg-royalty'),
+      animals: document.getElementById('leg-animals'),
+      colors: document.getElementById('leg-colors'),
+      countries: document.getElementById('leg-countries'),
+    };
+
+    function clearArrows() {
+      arrowsLayer.selectAll('*').remove();
+    }
+    function clearAnalogyText() {
+      analogyText.selectAll('*').remove();
+    }
+
+    function addArrow(x1, y1, x2, y2, id) {
+      arrowsLayer.append('line')
+        .attr('class', 'analogy-arrow visible')
+        .attr('x1', x1).attr('y1', y1)
+        .attr('x2', x2).attr('y2', y2)
+        .attr('stroke', '#6366f1')
+        .attr('marker-end', `url(#arrow-${id})`);
+    }
+
+    function showStep(step) {
+      buttons.forEach(b => b.classList.toggle('active', b.dataset.step == step));
+
+      // Update explanation
+      const exp = explanations[step];
+      explanationEl.innerHTML = `
+        <h3>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--primary)"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+          ${exp.title}
+        </h3>
+        ${exp.body}
+      `;
+
+      // Reset highlight/dim
+      wordElements.classed('dimmed', false).classed('highlighted', false);
+      labelsLayer.selectAll('.cluster-label').attr('opacity', 0);
+      clearArrows();
+      clearAnalogyText();
+      // Always reset contextual layer; it only shows in step 3
+      setContextVisible(false);
+      legendEl.style.transition = 'opacity 0.6s ease';
+      // Note: legend opacity is set per step below
+
+      if (step == 0) {
+        // Random positions, gray color, no cluster labels
+        wordElements.transition().duration(900).ease(d3.easeCubicInOut)
+          .attr('transform', d => `translate(${d.rx}, ${d.ry})`);
+        wordElements.select('circle').transition().duration(600)
+          .attr('fill', NEUTRAL);
+        legendEl.style.opacity = '0.5';
+        Object.values(legendDots).forEach(el => el.style.background = NEUTRAL);
+
+      } else if (step == 1) {
+        // Animate to learned positions + reveal cluster colors
+        wordElements.transition().duration(1400).ease(d3.easeCubicInOut)
+          .attr('transform', d => `translate(${d.x}, ${d.y})`);
+        wordElements.select('circle').transition().duration(800).delay(500)
+          .attr('fill', d => clusterColors[d.cluster]);
+        labelsLayer.selectAll('.cluster-label').transition().delay(900).duration(600)
+          .attr('opacity', 0.55);
+        legendEl.style.transition = 'opacity 0.6s ease';
+        legendEl.style.opacity = '1';
+        Object.entries(legendDots).forEach(([k, el]) => {
+          el.style.transition = 'background 0.6s ease';
+          el.style.background = clusterColors[k];
+        });
+
+      } else if (step == 2) {
+        // Stay at learned positions, dim non-royalty, draw analogy
+        wordElements.transition().duration(700).ease(d3.easeCubicOut)
+          .attr('transform', d => `translate(${d.x}, ${d.y})`);
+        wordElements.select('circle').transition().duration(500)
+          .attr('fill', d => clusterColors[d.cluster]);
+        labelsLayer.selectAll('.cluster-label').transition().duration(500)
+          .attr('opacity', 0.55);
+        legendEl.style.opacity = '1';
+
+        wordElements.classed('dimmed', d => d.cluster !== 'royalty');
+        const highlight = new Set(['rey', 'reina', 'hombre', 'mujer']);
+        wordElements.classed('highlighted', d => highlight.has(d.word));
+
+        addArrow(215, 100, 315, 110, 'royalty');
+        addArrow(220, 220, 315, 230, 'common');
+        addArrow(205, 160, 325, 170, 'child');
+
+        analogyText.append('rect')
+          .attr('x', 60).attr('y', 318)
+          .attr('width', 280).attr('height', 36)
+          .attr('rx', 8)
+          .attr('fill', 'white')
+          .attr('stroke', '#6366f1')
+          .attr('stroke-width', 1.5)
+          .attr('class', 'analogy-text visible');
+
+        analogyText.append('text')
+          .attr('x', 200).attr('y', 341)
+          .attr('text-anchor', 'middle')
+          .attr('fill', '#6366f1')
+          .attr('font-family', "'JetBrains Mono', monospace")
+          .attr('font-weight', '500')
+          .attr('font-size', '13')
+          .attr('class', 'analogy-text visible')
+          .text('rey − hombre + mujer ≈ reina');
+
+      } else if (step == 3) {
+        // Contextual embeddings: dim the static picture, reveal the LLM insight
+        wordElements.transition().duration(700).ease(d3.easeCubicOut)
+          .attr('transform', d => `translate(${d.x}, ${d.y})`);
+        wordElements.select('circle').transition().duration(500)
+          .attr('fill', d => clusterColors[d.cluster]);
+        labelsLayer.selectAll('.cluster-label').transition().duration(500)
+          .attr('opacity', 0);
+        legendEl.style.opacity = '0.35';
+
+        // Dim the original 32 words so the new content pops
+        wordElements.classed('dimmed', true);
+
+        // Reveal the contextual layer with a slight stagger
+        ctxTitle.transition().delay(400).duration(600)
+          .attr('opacity', 1)
+          .on('end', function() { d3.select(this).classed('visible', true); });
+
+        ctx1.selectAll('.ctx-highlight-box').transition().delay(700).duration(600)
+          .attr('opacity', 1)
+          .on('end', function() { d3.select(this).classed('visible', true); });
+        ctx1.selectAll('.ctx-sentence').transition().delay(900).duration(500)
+          .attr('opacity', 1)
+          .on('end', function() { d3.select(this).classed('visible', true); });
+        ctx1.selectAll('.ctx-arrow').transition().delay(1100).duration(500)
+          .attr('opacity', 0.7)
+          .on('end', function() { d3.select(this).classed('visible', true); });
+        ctx1.selectAll('.ctx-tag').transition().delay(1300).duration(500)
+          .attr('opacity', 1)
+          .on('end', function() { d3.select(this).classed('visible', true); });
+        ctx1.selectAll('.ctx-banco').transition().delay(1100).duration(500)
+          .attr('opacity', 1)
+          .on('end', function() { d3.select(this).classed('ctx-appeared', true); });
+
+        ctx2.selectAll('.ctx-highlight-box').transition().delay(1000).duration(600)
+          .attr('opacity', 1)
+          .on('end', function() { d3.select(this).classed('visible', true); });
+        ctx2.selectAll('.ctx-sentence').transition().delay(1200).duration(500)
+          .attr('opacity', 1)
+          .on('end', function() { d3.select(this).classed('visible', true); });
+        ctx2.selectAll('.ctx-arrow').transition().delay(1400).duration(500)
+          .attr('opacity', 0.7)
+          .on('end', function() { d3.select(this).classed('visible', true); });
+        ctx2.selectAll('.ctx-tag').transition().delay(1600).duration(500)
+          .attr('opacity', 1)
+          .on('end', function() { d3.select(this).classed('visible', true); });
+        ctx2.selectAll('.ctx-banco').transition().delay(1400).duration(500)
+          .attr('opacity', 1)
+          .on('end', function() { d3.select(this).classed('ctx-appeared', true); });
+      }
+    }
+
+    buttons.forEach(btn => {
+      btn.addEventListener('click', () => showStep(parseInt(btn.dataset.step)));
+    });
+
+    // Initial render (step 0 = random, no animation)
+    showStep(0);
+  </script>
+</body>
+</html>
