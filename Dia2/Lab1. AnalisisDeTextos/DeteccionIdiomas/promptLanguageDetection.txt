@@ -1,0 +1,5 @@
+Analiza el siguiente documento y realiza lo siguiente:
+
+1. Detecta el idioma de origen del documento.
+2. Asigna un score de confianza entre 0 y 100 sobre la detección del idioma, con una justificación breve basada en evidencia del texto (vocabulario, gramática, ortografía, etc.).
+3. Traduce el documento completo al idioma destino indicado, conservando el formato original (párrafos, listas, títulos) y el tono del texto. Si hay términos que no deben traducirse (nombres propios, siglas, jerga técnica), consérvalos en su forma original.
