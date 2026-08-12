@@ -1,0 +1,101 @@
+id_solicitud,edad,pais_origen,pais_destino,tipo_visa,nivel_educativo,estado_civil,oferta_empleo,ingresos_anuales_usd,dominio_idioma,num_dependientes,antecedentes_penales,documentacion_completa,tiempo_tramite_dias,estado_solicitud
+301,46,Ecuador,España,Reunificacion_Familiar,Secundaria,Viudo,Si,10318.76,Avanzado,3,Si,Si,243,Rechazado
+302,28,El Salvador,Panama,Reunificacion_Familiar,Universitario,Soltero,Si,2690.63,Nativo,5,No,Si,132,Aprobado
+303,52,Colombia,Panama,Asilo,Primaria,Soltero,Si,1087.69,Avanzado,3,No,No,204,Aprobado
+304,55,Colombia,Brasil,Reunificacion_Familiar,Posgrado,Viudo,Si,13956.12,Intermedio,3,No,Si,134,Aprobado
+305,18,Honduras,Panama,Trabajo,Universitario,Soltero,Si,36715.26,Basico,1,No,No,383,Rechazado
+306,24,Ecuador,Estados Unidos,Estudio,Secundaria,Viudo,No,9542.69,Basico,3,No,Si,242,Aprobado
+307,44,Nicaragua,Panama,Trabajo,Universitario,Soltero,Si,11893.78,Intermedio,3,No,Si,177,Aprobado
+308,38,Venezuela,España,Turismo,Primaria,Casado,No,7146.82,Intermedio,0,No,Si,335,Aprobado
+309,42,Honduras,Estados Unidos,Reunificacion_Familiar,Secundaria,Casado,No,1210.28,Nativo,3,No,Si,15,Rechazado
+310,30,Haiti,España,Trabajo,Secundaria,Viudo,Si,8315.93,Basico,2,Si,No,15,Rechazado
+311,54,Ecuador,Brasil,Trabajo,Universitario,Casado,Si,11272.11,Basico,5,Si,Si,291,Rechazado
+312,53,Peru,Canada,Trabajo,Posgrado,Soltero,Si,13353.12,Nativo,4,Si,Si,208,Rechazado
+313,43,Haiti,Canada,Trabajo,Universitario,Soltero,No,31711.38,Basico,3,No,Si,230,Aprobado
+314,57,Bolivia,Canada,Trabajo,Universitario,Casado,Si,17791.57,Avanzado,3,No,No,53,Aprobado
+315,48,Colombia,Panama,Trabajo,Universitario,Soltero,Si,32069.65,Intermedio,3,No,Si,199,Aprobado
+316,30,Colombia,Panama,Estudio,Secundaria,Divorciado,No,19709.2,Avanzado,2,No,Si,400,Aprobado
+317,47,Honduras,Chile,Trabajo,Universitario,Casado,No,18183.45,Basico,1,No,No,294,Rechazado
+318,29,Cuba,Mexico,Asilo,Posgrado,Viudo,No,21181.66,Nativo,2,No,No,220,Rechazado
+319,54,Peru,Brasil,Asilo,Secundaria,Viudo,Si,4358.15,Intermedio,1,No,No,152,Aprobado
+320,41,Cuba,España,Reunificacion_Familiar,Universitario,Soltero,No,23704.03,Intermedio,0,No,Si,157,Aprobado
+321,39,Nicaragua,Estados Unidos,Trabajo,Universitario,Casado,Si,8362.93,Avanzado,4,No,Si,15,Aprobado
+322,33,Honduras,Chile,Reunificacion_Familiar,Universitario,Divorciado,No,8659.01,Nativo,3,No,Si,230,Aprobado
+323,59,Nicaragua,Brasil,Asilo,Secundaria,Casado,Si,12097.21,Avanzado,0,No,No,296,Aprobado
+324,40,Honduras,Chile,Estudio,Secundaria,Soltero,No,7551.29,Avanzado,2,No,Si,25,Rechazado
+325,36,Ecuador,Panama,Estudio,Universitario,Viudo,Si,3283.78,Avanzado,4,No,No,127,Rechazado
+326,37,Haiti,España,Reunificacion_Familiar,Secundaria,Viudo,No,11210.52,Avanzado,5,No,Si,72,Rechazado
+327,49,Nicaragua,Estados Unidos,Estudio,Universitario,Divorciado,No,8703.27,Intermedio,4,No,Si,93,Rechazado
+328,47,Peru,Panama,Trabajo,Secundaria,Soltero,Si,8377.17,Intermedio,3,No,No,207,Rechazado
+329,48,Haiti,Panama,Estudio,Posgrado,Divorciado,Si,10093.12,Avanzado,1,No,Si,15,Aprobado
+330,48,Venezuela,Mexico,Turismo,Secundaria,Divorciado,Si,8443.77,Avanzado,1,No,No,270,Aprobado
+331,65,Peru,Chile,Estudio,Secundaria,Soltero,No,35385.42,Avanzado,3,No,Si,286,Aprobado
+332,36,Ecuador,Estados Unidos,Asilo,Secundaria,Divorciado,No,33148.48,Intermedio,3,No,Si,173,Rechazado
+333,35,Peru,Chile,Turismo,Universitario,Casado,No,11603.65,Avanzado,5,Si,Si,15,Aprobado
+334,31,Nicaragua,Canada,Reunificacion_Familiar,Universitario,Casado,No,11218.35,Basico,5,No,Si,90,Aprobado
+335,50,El Salvador,España,Turismo,Universitario,Soltero,Si,108.87,Avanzado,2,No,Si,339,Aprobado
+336,57,Honduras,Canada,Estudio,Tecnico,Casado,Si,6068.49,Avanzado,0,No,Si,15,Aprobado
+337,40,Colombia,Panama,Turismo,Secundaria,Casado,Si,20997.34,Intermedio,2,No,Si,163,Aprobado
+338,30,Nicaragua,Panama,Asilo,Secundaria,Viudo,Si,7351.98,Intermedio,3,No,Si,69,Aprobado
+339,31,Honduras,Argentina,Turismo,Secundaria,Viudo,Si,27450.42,Avanzado,2,No,Si,292,Aprobado
+340,51,Honduras,Canada,Asilo,Universitario,Divorciado,Si,26076.48,Avanzado,2,No,Si,126,Aprobado
+341,52,Venezuela,Brasil,Estudio,Secundaria,Viudo,No,5931.01,Nativo,3,No,Si,247,Aprobado
+342,49,Peru,España,Reunificacion_Familiar,Universitario,Viudo,No,12480.14,Avanzado,2,No,Si,265,Aprobado
+343,33,Honduras,Estados Unidos,Estudio,Universitario,Casado,Si,37669.23,Intermedio,2,No,Si,400,Aprobado
+344,45,Ecuador,Argentina,Estudio,Secundaria,Soltero,Si,1565.52,Intermedio,3,No,No,179,Rechazado
+345,43,Ecuador,Estados Unidos,Asilo,Primaria,Soltero,No,7533.89,Avanzado,2,No,No,244,Rechazado
+346,45,Peru,Mexico,Trabajo,Secundaria,Casado,No,1306.46,Intermedio,3,No,Si,35,Aprobado
+347,54,Honduras,Mexico,Reunificacion_Familiar,Universitario,Divorciado,Si,3968.48,Basico,3,No,Si,335,Aprobado
+348,45,Nicaragua,Mexico,Turismo,Secundaria,Soltero,No,46710.75,Basico,1,No,Si,116,Rechazado
+349,51,Bolivia,Estados Unidos,Reunificacion_Familiar,Universitario,Soltero,No,7531.07,Avanzado,2,No,Si,139,Aprobado
+350,43,Venezuela,Argentina,Turismo,Posgrado,Casado,Si,491.91,Avanzado,5,No,Si,199,Aprobado
+351,46,Haiti,Mexico,Reunificacion_Familiar,Secundaria,Casado,Si,3237.65,Avanzado,1,Si,Si,27,Rechazado
+352,51,Peru,Brasil,Reunificacion_Familiar,Universitario,Viudo,No,1069.96,Intermedio,0,No,Si,227,Rechazado
+353,22,Nicaragua,Brasil,Reunificacion_Familiar,Universitario,Casado,Si,12951.03,Basico,0,No,No,310,Rechazado
+354,38,Cuba,Canada,Reunificacion_Familiar,Universitario,Casado,No,16623.5,Avanzado,3,No,Si,234,Aprobado
+355,35,Ecuador,Canada,Estudio,Primaria,Soltero,Si,23976.5,Avanzado,3,No,Si,24,Aprobado
+356,33,Cuba,Panama,Estudio,Tecnico,Soltero,No,20022.08,Nativo,2,No,Si,188,Aprobado
+357,38,Colombia,Panama,Reunificacion_Familiar,Secundaria,Divorciado,Si,1695.57,Avanzado,5,No,No,285,Aprobado
+358,62,Colombia,Estados Unidos,Reunificacion_Familiar,Secundaria,Soltero,No,15863.59,Intermedio,0,No,Si,15,Aprobado
+359,30,Nicaragua,Panama,Asilo,Tecnico,Casado,No,9648.03,Basico,3,No,Si,81,Rechazado
+360,55,Venezuela,Argentina,Turismo,Universitario,Casado,Si,26983.69,Avanzado,5,No,Si,300,Aprobado
+361,19,Haiti,Brasil,Turismo,Posgrado,Viudo,No,22053.29,Avanzado,1,Si,Si,232,Rechazado
+362,37,Nicaragua,Panama,Turismo,Universitario,Divorciado,No,51550.76,Avanzado,2,No,No,248,Aprobado
+363,44,Peru,Chile,Estudio,Tecnico,Divorciado,No,3605.7,Nativo,1,Si,Si,400,Aprobado
+364,50,Ecuador,Brasil,Trabajo,Secundaria,Divorciado,Si,2946.13,Avanzado,1,No,Si,254,Aprobado
+365,52,Bolivia,Brasil,Estudio,Secundaria,Divorciado,Si,6509.83,Avanzado,2,No,Si,275,Rechazado
+366,53,Bolivia,Panama,Estudio,Posgrado,Casado,Si,10051.23,Avanzado,5,No,Si,400,Rechazado
+367,37,Ecuador,Panama,Trabajo,Universitario,Soltero,No,5130.11,Avanzado,5,No,No,178,Rechazado
+368,36,El Salvador,Panama,Asilo,Tecnico,Divorciado,No,3863.02,Intermedio,2,No,Si,112,Rechazado
+369,54,Ecuador,Panama,Estudio,Tecnico,Soltero,No,14909.27,Avanzado,5,No,Si,249,Aprobado
+370,39,Peru,Brasil,Trabajo,Tecnico,Viudo,No,6487.0,Intermedio,3,Si,No,251,Rechazado
+371,24,Haiti,Panama,Trabajo,Universitario,Soltero,Si,4868.59,Intermedio,5,No,No,143,Aprobado
+372,26,Venezuela,Estados Unidos,Trabajo,Universitario,Divorciado,Si,1690.34,Basico,2,No,Si,86,Aprobado
+373,29,Haiti,Estados Unidos,Turismo,Universitario,Viudo,Si,149.24,Avanzado,3,No,Si,400,Rechazado
+374,49,Nicaragua,Mexico,Turismo,Universitario,Soltero,No,34012.63,Nativo,3,No,Si,238,Aprobado
+375,44,Honduras,Mexico,Asilo,Tecnico,Viudo,Si,33198.24,Intermedio,5,No,Si,120,Aprobado
+376,51,El Salvador,España,Reunificacion_Familiar,Secundaria,Divorciado,No,22638.44,Avanzado,4,No,Si,304,Aprobado
+377,36,Venezuela,Argentina,Trabajo,Secundaria,Viudo,No,18251.0,Basico,1,Si,Si,189,Aprobado
+378,44,Colombia,Argentina,Estudio,Tecnico,Soltero,No,5818.74,Nativo,4,No,No,173,Aprobado
+379,50,Venezuela,Panama,Reunificacion_Familiar,Tecnico,Soltero,No,18924.9,Avanzado,2,No,No,264,Aprobado
+380,38,Venezuela,Brasil,Asilo,Universitario,Divorciado,No,2654.93,Nativo,2,No,No,57,Rechazado
+381,48,Peru,Brasil,Estudio,Tecnico,Casado,No,12187.51,Intermedio,4,No,No,241,Rechazado
+382,33,Ecuador,Brasil,Reunificacion_Familiar,Tecnico,Soltero,No,4370.74,Intermedio,3,Si,No,400,Rechazado
+383,37,Colombia,España,Trabajo,Universitario,Viudo,Si,18995.22,Nativo,3,No,No,254,Rechazado
+384,37,Cuba,Mexico,Asilo,Tecnico,Divorciado,No,39722.23,Intermedio,3,No,No,159,Aprobado
+385,26,Ecuador,Panama,Estudio,Tecnico,Casado,No,3220.56,Basico,3,No,Si,145,Aprobado
+386,49,Nicaragua,Mexico,Asilo,Universitario,Soltero,Si,6161.22,Avanzado,3,No,Si,156,Aprobado
+387,35,Colombia,España,Turismo,Tecnico,Casado,Si,11965.85,Basico,0,No,Si,173,Aprobado
+388,42,Ecuador,Panama,Asilo,Tecnico,Casado,No,648.39,Intermedio,4,No,Si,159,Rechazado
+389,48,Venezuela,Argentina,Estudio,Secundaria,Viudo,No,1170.04,Avanzado,1,No,Si,304,Aprobado
+390,48,Haiti,Panama,Turismo,Secundaria,Soltero,Si,38800.58,Intermedio,0,No,Si,15,Aprobado
+391,51,Nicaragua,Chile,Reunificacion_Familiar,Secundaria,Soltero,No,14970.79,Avanzado,3,Si,Si,298,Rechazado
+392,41,Bolivia,Panama,Estudio,Tecnico,Divorciado,No,5445.67,Avanzado,3,No,Si,159,Aprobado
+393,36,Haiti,Argentina,Turismo,Secundaria,Casado,Si,10742.81,Avanzado,1,No,Si,244,Aprobado
+394,41,Haiti,Argentina,Reunificacion_Familiar,Tecnico,Soltero,No,6541.29,Intermedio,4,No,No,75,Rechazado
+395,19,Peru,Chile,Asilo,Tecnico,Divorciado,Si,12319.34,Avanzado,0,Si,No,350,Rechazado
+396,22,Venezuela,Canada,Trabajo,Secundaria,Divorciado,Si,6824.24,Avanzado,2,No,Si,341,Aprobado
+397,24,Haiti,Canada,Reunificacion_Familiar,Tecnico,Viudo,Si,9913.1,Basico,2,No,Si,309,Aprobado
+398,28,Ecuador,Estados Unidos,Reunificacion_Familiar,Tecnico,Divorciado,No,20516.07,Basico,3,No,Si,32,Aprobado
+399,47,Colombia,Canada,Trabajo,Secundaria,Soltero,No,19370.29,Basico,3,No,No,294,Rechazado
+400,29,El Salvador,Panama,Asilo,Posgrado,Divorciado,No,37069.18,Avanzado,1,No,No,247,Rechazado

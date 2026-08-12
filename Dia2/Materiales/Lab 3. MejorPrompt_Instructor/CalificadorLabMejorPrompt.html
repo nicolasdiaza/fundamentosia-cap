@@ -1,0 +1,1299 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Scoring · Lab Diseño de Prompts</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #fafafa;
+      --surface: #ffffff;
+      --border: #e4e4e7;
+      --border-soft: #f4f4f5;
+      --text: #14171e;
+      --text-muted: #3a4256;
+      --text-soft: #71717a;
+      --text-faint: #a1a1aa;
+
+      --c1: #6366f1;
+      --c2: #0891b2;
+      --c3: #a21caf;
+      --good: #059669;
+      --warn: #d97706;
+      --bad: #dc2626;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+    body {
+      font-family: 'Outfit', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.55;
+      -webkit-font-smoothing: antialiased;
+      min-height: 100dvh;
+    }
+    .container { max-width: 1200px; margin: 0 auto; padding: 40px 32px 80px; }
+
+    /* Header */
+    .eyebrow {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--c1);
+      margin-bottom: 14px;
+    }
+    h1 {
+      font-size: 32px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      margin: 0 0 8px;
+    }
+    .lede {
+      font-size: 16px;
+      color: var(--text-muted);
+      max-width: 720px;
+      margin: 0 0 24px;
+    }
+
+    /* Toolbar */
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 10px 16px;
+      margin-bottom: 16px;
+    }
+    .toolbar-left, .toolbar-right { display: flex; gap: 8px; flex-wrap: wrap; }
+    .btn {
+      font-family: 'Outfit', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      padding: 6px 12px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      cursor: pointer;
+      transition: all 0.15s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .btn:hover { background: var(--bg); border-color: #d4d4d8; }
+    .btn-primary { background: var(--text); color: white; border-color: var(--text); }
+    .btn-primary:hover { background: #2a2f3a; }
+    .btn-danger { color: var(--bad); border-color: #fecaca; }
+    .btn-danger:hover { background: #fef2f2; }
+    .btn svg { width: 14px; height: 14px; }
+
+    /* Tabs (main) */
+    .tab-bar {
+      display: flex;
+      gap: 2px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px 12px 0 0;
+      padding: 0 8px;
+      overflow-x: auto;
+      border-bottom: none;
+    }
+    .tab-bar::-webkit-scrollbar { height: 4px; }
+    .tab {
+      font-family: 'Outfit', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      padding: 12px 16px;
+      background: transparent;
+      border: none;
+      color: var(--text-soft);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .tab:hover { color: var(--text); }
+    .tab.active {
+      color: var(--text);
+      border-bottom-color: var(--text);
+      font-weight: 600;
+    }
+    .tab .tab-score {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: var(--bg);
+      color: var(--text-soft);
+    }
+    .tab.active .tab-score {
+      background: var(--text);
+      color: white;
+    }
+    .tab-add {
+      font-family: 'Outfit', sans-serif;
+      font-size: 18px;
+      font-weight: 500;
+      padding: 8px 14px;
+      background: transparent;
+      border: none;
+      color: var(--text-soft);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+    }
+    .tab-add:hover { color: var(--text); }
+
+    /* Tab content panel */
+    .tab-panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 0 0 12px 12px;
+      padding: 24px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+    }
+
+    /* Sub-tabs */
+    .subtab-bar {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 20px;
+      border-bottom: 1px solid var(--border-soft);
+      padding-bottom: 0;
+    }
+    .subtab {
+      font-family: 'Outfit', sans-serif;
+      font-size: 12px;
+      font-weight: 500;
+      padding: 8px 14px;
+      background: transparent;
+      border: none;
+      color: var(--text-soft);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: all 0.15s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .subtab:hover { color: var(--text); }
+    .subtab.active { color: var(--text); font-weight: 600; }
+    .subtab.active[data-challenge="c1"] { border-bottom-color: var(--c1); }
+    .subtab.active[data-challenge="c2"] { border-bottom-color: var(--c2); }
+    .subtab.active[data-challenge="c3"] { border-bottom-color: var(--c3); }
+    .subtab.active[data-challenge="overview"] { border-bottom-color: var(--text); }
+    .subtab .subtab-score {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      padding: 1px 5px;
+      border-radius: 3px;
+      background: var(--bg);
+      color: var(--text-soft);
+    }
+    .subtab.active .subtab-score { background: var(--text); color: white; }
+    .subtab[data-challenge="c1"] .subtab-tag { color: var(--c1); }
+    .subtab[data-challenge="c2"] .subtab-tag { color: var(--c2); }
+    .subtab[data-challenge="c3"] .subtab-tag { color: var(--c3); }
+    .subtab-tag { font-weight: 700; }
+
+    /* Summary */
+    .summary h2 {
+      font-size: 14px;
+      font-weight: 600;
+      margin: 0 0 12px;
+    }
+    .summary table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    .summary th, .summary td { padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--border-soft); }
+    .summary th { font-size: 11px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; color: var(--text-soft); }
+    .summary td { font-weight: 500; }
+    .summary tr:last-child td { border-bottom: none; }
+    .summary tr.gold td { background: #fef3c7; }
+    .summary tr.silver td { background: #f1f5f9; }
+    .summary tr.bronze td { background: #fed7aa; }
+    .rank-medal {
+      display: inline-block;
+      width: 26px; height: 26px; line-height: 26px;
+      border-radius: 50%; font-size: 13px; font-weight: 700;
+      text-align: center; color: white;
+    }
+    .rank-medal.gold { background: #d97706; }
+    .rank-medal.silver { background: #64748b; }
+    .rank-medal.bronze { background: #b45309; }
+    .rank-medal.none { background: #d4d4d8; }
+    .score-pill {
+      display: inline-block; padding: 3px 10px; border-radius: 999px;
+      font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 600;
+    }
+    .score-pill.c1 { background: #eef2ff; color: #4338ca; }
+    .score-pill.c2 { background: #cffafe; color: #155e75; }
+    .score-pill.c3 { background: #fae8ff; color: #86198f; }
+    .score-pill.total { background: var(--text); color: white; }
+
+    /* Team header in tab */
+    .team-header {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 12px; flex-wrap: wrap; margin-bottom: 16px;
+    }
+    .team-name-input {
+      font-family: 'Outfit', sans-serif; font-size: 22px; font-weight: 600;
+      color: var(--text); border: none; background: transparent;
+      outline: none; flex: 1; min-width: 200px;
+    }
+    .team-name-input:focus { border-bottom: 1px solid var(--text); }
+    .team-total {
+      font-family: 'JetBrains Mono', monospace; font-size: 24px; font-weight: 700;
+      color: var(--text); padding: 4px 12px; background: var(--bg);
+      border-radius: 8px; border: 1px solid var(--border-soft);
+    }
+    .team-total.maxed { color: var(--good); }
+
+    /* Rubric */
+    .rubric { display: grid; grid-template-columns: 1fr auto; gap: 12px 16px; align-items: center; }
+    .rubric-row { display: contents; }
+    .rubric-label { font-size: 13px; color: var(--text-muted); }
+    .rubric-label strong { color: var(--text); font-weight: 600; }
+    .rubric-label small { color: var(--text-faint); font-size: 11px; display: block; margin-top: 2px; }
+    .rubric-control { display: flex; align-items: center; gap: 8px; min-width: 140px; justify-content: flex-end; }
+    .num-input {
+      font-family: 'JetBrains Mono', monospace; font-size: 14px; font-weight: 600;
+      color: var(--text); width: 64px; padding: 6px 8px; border: 1px solid var(--border);
+      border-radius: 6px; text-align: center; background: var(--bg); outline: none;
+    }
+    .num-input:focus { border-color: var(--text); background: white; }
+    .num-input::-webkit-inner-spin-button { -webkit-appearance: none; }
+    .num-max { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text-soft); }
+    .select-input {
+      font-family: 'Outfit', sans-serif; font-size: 13px; padding: 6px 8px;
+      border: 1px solid var(--border); border-radius: 6px; background: var(--bg);
+      color: var(--text); cursor: pointer; outline: none; min-width: 140px;
+    }
+    .select-input:focus { border-color: var(--text); background: white; }
+    .checkbox-label {
+      display: inline-flex; align-items: center; gap: 8px; font-size: 13px;
+      color: var(--text); cursor: pointer; padding: 6px 10px;
+      border: 1px solid var(--border); border-radius: 6px; background: var(--bg);
+      transition: all 0.15s ease;
+    }
+    .checkbox-label input { cursor: pointer; }
+    .checkbox-label.checked { background: #ecfdf5; border-color: #6ee7b7; color: #047857; }
+    .checkbox-label:hover { background: white; }
+
+    .anatomy-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 6px;
+    }
+    .anatomy-item {
+      display: flex; align-items: center; gap: 6px; font-size: 12px;
+      padding: 4px 8px; border: 1px solid var(--border-soft); border-radius: 5px;
+      background: var(--bg); cursor: pointer;
+    }
+    .anatomy-item input { cursor: pointer; margin: 0; }
+    .anatomy-item.checked { background: #eef2ff; border-color: #c7d2fe; color: #3730a3; }
+
+    /* Overview tab content */
+    .overview-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+    }
+    .overview-card {
+      border: 1px solid var(--border-soft);
+      border-radius: 10px;
+      padding: 16px;
+      background: var(--bg);
+    }
+    .overview-card-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 12px;
+    }
+    .overview-card-title {
+      font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 8px;
+    }
+    .overview-card-score {
+      font-family: 'JetBrains Mono', monospace; font-size: 18px; font-weight: 700;
+      color: var(--text);
+    }
+    .overview-stat {
+      display: flex; justify-content: space-between; font-size: 12px;
+      color: var(--text-muted); padding: 4px 0;
+    }
+    .overview-stat strong { color: var(--text); font-weight: 600; }
+    .anatomy-summary {
+      display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px;
+    }
+    .anatomy-chip {
+      font-size: 10px; font-weight: 600; padding: 2px 6px; border-radius: 3px;
+      background: var(--bg); border: 1px solid var(--border-soft);
+    }
+    .anatomy-chip.on { background: #eef2ff; color: #3730a3; border-color: #c7d2fe; }
+    .anatomy-chip.off { color: var(--text-faint); opacity: 0.5; }
+
+    .footer-note {
+      margin-top: 32px; padding: 16px; background: var(--surface);
+      border: 1px dashed var(--border); border-radius: 10px;
+      font-size: 12px; color: var(--text-soft); line-height: 1.6;
+    }
+    .footer-note strong { color: var(--text); }
+    .footer-note code { background: var(--bg); padding: 1px 5px; border-radius: 3px; }
+
+    .breakdown {
+      margin-top: 14px; font-size: 11px; color: var(--text-soft);
+      font-family: 'JetBrains Mono', monospace; padding: 10px 12px;
+      background: var(--bg); border-radius: 8px;
+    }
+
+    .empty-state {
+      text-align: center; padding: 60px 20px; color: var(--text-soft); font-size: 14px;
+    }
+
+    @media (max-width: 768px) {
+      .container { padding: 24px 16px 60px; }
+      h1 { font-size: 24px; }
+      .rubric { grid-template-columns: 1fr; }
+      .rubric-control { justify-content: flex-start; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="eyebrow">Scoring · Lab Diseño de Prompts</div>
+    <h1>Dashboard de calificación</h1>
+    <p class="lede">Tabs por equipo, sub-tabs por challenge. La nota se calcula automáticamente y se persiste en tu navegador. Al final, exporta el JSON para tu archivo.</p>
+
+    <div class="toolbar">
+      <div class="toolbar-left">
+        <button class="btn btn-danger" id="reset-all-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>
+          Reiniciar
+        </button>
+      </div>
+      <div class="toolbar-right">
+        <button class="btn" id="export-json-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          JSON
+        </button>
+        <button class="btn" id="export-csv-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          CSV
+        </button>
+        <button class="btn" id="print-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+          Imprimir
+        </button>
+      </div>
+    </div>
+
+    <div class="tab-bar" id="tab-bar"></div>
+    <div class="tab-panel" id="tab-panel"></div>
+
+    <div class="footer-note">
+      <strong>Cómo funciona:</strong> Cada tab es un equipo. Dentro de cada equipo hay sub-tabs por challenge (C1, C2, C3) y un "Vista" con el resumen. Los datos se guardan en <code>localStorage</code> de este navegador. Usa "JSON" o "CSV" para archivar los resultados.
+    </div>
+  </div>
+
+  <script>
+    // ─── Constants ───
+    const ANATOMY_PARTS = [
+      { id: 'rol',          label: 'ROL' },
+      { id: 'tarea',        label: 'TAREA' },
+      { id: 'contexto',     label: 'CONTEXTO' },
+      { id: 'categorias',   label: 'CATEGORÍAS' },
+      { id: 'restricciones',label: 'RESTRICCIONES' },
+      { id: 'formato',      label: 'FORMATO' },
+      { id: 'ejemplos',     label: 'EJEMPLOS' },
+    ];
+
+    const TESTS = {
+      c1: { total: 16, ambiguous: 4 },
+      c2: { total: 16, critical: 5, clean: 9 },
+      c3: { total: 12, ambiguous: 3 },
+    };
+
+    const CHALLENGE_META = {
+      c1: { name: 'Clasificador de consultas',   short: 'C1', color: 'c1' },
+      c2: { name: 'Validador de alertas',        short: 'C2', color: 'c2' },
+      c3: { name: 'Detector de inconsistencias', short: 'C3', color: 'c3' },
+    };
+
+    // ─── Score formulas ───
+    function f1Score(tp, fp, fn) {
+      const precision = tp + fp > 0 ? tp / (tp + fp) : 0;
+      const recall = tp + fn > 0 ? tp / (tp + fn) : 0;
+      if (precision + recall === 0) return 0;
+      return 2 * (precision * recall) / (precision + recall);
+    }
+
+    function round(n, d=2) { return Math.round(n * 10**d) / 10**d; }
+
+    function scoreChallenge1(scores) {
+      const tp = scores.tp, fp = scores.fp, fn = scores.fn;
+      const f1 = f1Score(tp, fp, fn);
+      const f1Pts = f1 * 4;
+      const ambigPts = (scores.ambiguous_correct / TESTS.c1.ambiguous) * 2;
+      const fpPenalty = scores.fp > 0 ? 0.5 : 0;
+      const anatomyCount = ANATOMY_PARTS.filter(p => scores.anatomy[p.id]).length;
+      const anatomyPts = (anatomyCount / ANATOMY_PARTS.length) * 2;
+      const docMap = { none: 0, brief: 0.5, detailed: 1 };
+      const docPts = docMap[scores.documentation] || 0;
+      const effMap = { high: 0, medium: 0.5, low: 1 };
+      const effPts = effMap[scores.efficiency] || 0;
+      const total = Math.max(0, f1Pts + ambigPts + anatomyPts + docPts + effPts - fpPenalty);
+      return { total, breakdown: {
+        f1: { value: f1, points: round(f1Pts, 2), max: 4 },
+        ambiguous: { points: round(ambigPts, 2), max: 2 },
+        fp_penalty: { points: -fpPenalty, max: 0 },
+        anatomy: { value: `${anatomyCount}/7`, points: round(anatomyPts, 2), max: 2 },
+        documentation: { points: docPts, max: 1 },
+        efficiency: { points: effPts, max: 1 },
+      }};
+    }
+
+    function scoreChallenge2(scores) {
+      const tp = scores.tp, fp = scores.fp, fn = scores.fn;
+      const f1 = f1Score(tp, fp, fn);
+      const f1Pts = f1 * 3;
+      const sevPts = scores.sev_total > 0
+        ? ((scores.sev_exact + 0.5 * scores.sev_close) / scores.sev_total) * 2
+        : 0;
+      const tnPts = (scores.tn / TESTS.c2.clean) * 1;
+      const critPts = (scores.critical_found / TESTS.c2.critical) * 1;
+      const anatomyCount = ANATOMY_PARTS.filter(p => scores.anatomy[p.id]).length;
+      const anatomyPts = (anatomyCount / ANATOMY_PARTS.length) * 2;
+      const constraintPts = scores.constraint_met ? 1 : 0;
+      const effMap = { high: 0, medium: 0.5, low: 1 };
+      const effPts = effMap[scores.efficiency] || 0;
+      const total = f1Pts + sevPts + tnPts + critPts + anatomyPts + constraintPts + effPts;
+      return { total, breakdown: {
+        f1: { value: f1, points: round(f1Pts, 2), max: 3 },
+        severity: { points: round(sevPts, 2), max: 2 },
+        tn: { points: round(tnPts, 2), max: 1 },
+        critical: { points: round(critPts, 2), max: 1 },
+        anatomy: { value: `${anatomyCount}/7`, points: round(anatomyPts, 2), max: 2 },
+        constraint: { points: constraintPts, max: 1 },
+        efficiency: { points: effPts, max: 1 },
+      }};
+    }
+
+    function scoreChallenge3(scores) {
+      const tp = scores.tp, fp = scores.fp, fn = scores.fn;
+      const f1 = f1Score(tp, fp, fn);
+      const f1Pts = f1 * 3;
+      const citeTotal = scores.cite_verbatim + scores.cite_paraphrased + scores.cite_invented;
+      const citePts = citeTotal > 0
+        ? Math.min(2, (scores.cite_verbatim + 0.5 * scores.cite_paraphrased) / citeTotal * 2)
+        : 0;
+      const sevPts = scores.sev_total > 0
+        ? ((scores.sev_exact + 0.5 * scores.sev_close) / scores.sev_total) * 1
+        : 0;
+      const typePts = scores.type_total > 0
+        ? (scores.type_correct / scores.type_total) * 1
+        : 0;
+      const tnPts = (scores.tn / 5) * 1;
+      const anatomyCount = ANATOMY_PARTS.filter(p => scores.anatomy[p.id]).length;
+      const anatomyPts = (anatomyCount / ANATOMY_PARTS.length) * 2;
+      const constraintPts = scores.constraint_met ? 1 : 0;
+      const effMap = { high: 0, medium: 0.5, low: 1 };
+      const effPts = effMap[scores.efficiency] || 0;
+      const total = f1Pts + citePts + sevPts + typePts + tnPts + anatomyPts + constraintPts + effPts;
+      return { total, breakdown: {
+        f1: { value: f1, points: round(f1Pts, 2), max: 3 },
+        citations: { points: round(citePts, 2), max: 2 },
+        severity: { points: round(sevPts, 2), max: 1 },
+        type: { points: round(typePts, 2), max: 1 },
+        tn: { points: round(tnPts, 2), max: 1 },
+        anatomy: { value: `${anatomyCount}/7`, points: round(anatomyPts, 2), max: 2 },
+        constraint: { points: constraintPts, max: 1 },
+        efficiency: { points: effPts, max: 1 },
+      }};
+    }
+
+    function defaultScores(challenge) {
+      if (challenge === 'c1') {
+        return { tp: 0, fp: 0, fn: 0, ambiguous_correct: 0, anatomy: {}, documentation: 'none', efficiency: 'high' };
+      }
+      if (challenge === 'c2') {
+        return { tp: 0, fp: 0, fn: 0, sev_exact: 0, sev_close: 0, sev_total: 0, tn: 0, critical_found: 0, anatomy: {}, constraint_met: false, efficiency: 'high' };
+      }
+      if (challenge === 'c3') {
+        return { tp: 0, fp: 0, fn: 0, cite_verbatim: 0, cite_paraphrased: 0, cite_invented: 0, sev_exact: 0, sev_close: 0, sev_total: 0, type_correct: 0, type_total: 0, tn: 0, anatomy: {}, constraint_met: false, efficiency: 'high' };
+      }
+    }
+
+    // ─── State ───
+    const STORAGE_KEY = 'scoring-lab-v2';
+
+    function loadState() {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) return JSON.parse(saved);
+      } catch (e) {}
+      return null;
+    }
+
+    function saveState(state) {
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) {}
+    }
+
+    const defaultState = () => ({
+      teams: [
+        { id: 'team-1', name: 'Equipo 1', scores: { c1: defaultScores('c1'), c2: defaultScores('c2'), c3: defaultScores('c3') } },
+        { id: 'team-2', name: 'Equipo 2', scores: { c1: defaultScores('c1'), c2: defaultScores('c2'), c3: defaultScores('c3') } },
+        { id: 'team-3', name: 'Equipo 3', scores: { c1: defaultScores('c1'), c2: defaultScores('c2'), c3: defaultScores('c3') } },
+      ],
+      ui: { activeTab: 'team-1', activeSubTab: 'overview' },
+    });
+
+    let state = loadState() || defaultState();
+
+    // Ensure ui state exists for older saves
+    if (!state.ui) state.ui = { activeTab: 'team-1', activeSubTab: 'overview' };
+
+    function persist() { saveState(state); }
+
+    function teamTotal(team) {
+      const c1 = scoreChallenge1(team.scores.c1);
+      const c2 = scoreChallenge2(team.scores.c2);
+      const c3 = scoreChallenge3(team.scores.c3);
+      return {
+        c1: c1.total,
+        c2: c2.total,
+        c3: c3.total,
+        total: c1.total + c2.total + c3.total,
+        max: 30,
+        breakdowns: { c1: c1.breakdown, c2: c2.breakdown, c3: c3.breakdown },
+      };
+    }
+
+    // ─── Render ───
+    const tabBar = document.getElementById('tab-bar');
+    const tabPanel = document.getElementById('tab-panel');
+
+    function render() {
+      renderTabBar();
+      renderTabPanel();
+    }
+
+    function renderTabBar() {
+      const summary = state.teams.map(t => ({ team: t, totals: teamTotal(t) })).sort((a, b) => b.totals.total - a.totals.total);
+      const activeTeam = state.teams.find(t => t.id === state.ui.activeTab);
+
+      tabBar.innerHTML = `
+        <button class="tab ${state.ui.activeTab === '__summary' ? 'active' : ''}" data-tab-id="__summary">
+          Resumen
+        </button>
+        ${state.teams.map((t, i) => {
+          const totals = teamTotal(t);
+          const isActive = state.ui.activeTab === t.id;
+          return `
+            <button class="tab ${isActive ? 'active' : ''}" data-tab-id="${t.id}" data-team-id="${t.id}">
+              ${escapeHtml(t.name)}
+              <span class="tab-score">${totals.total.toFixed(1)}/${totals.max}</span>
+              ${state.teams.length > 1 ? `<span class="tab-close" data-close-team="${t.id}" title="Eliminar">×</span>` : ''}
+            </button>
+          `;
+        }).join('')}
+        <button class="tab-add" data-action="add-team" title="Agregar equipo">+</button>
+      `;
+    }
+
+    function renderTabPanel() {
+      if (state.ui.activeTab === '__summary') {
+        tabPanel.innerHTML = renderSummary();
+      } else {
+        const team = state.teams.find(t => t.id === state.ui.activeTab);
+        if (!team) {
+          tabPanel.innerHTML = `<div class="empty-state">No hay equipo seleccionado. <button class="btn" data-action="add-team" style="margin-left: 8px;">Agregar equipo</button></div>`;
+        } else {
+          tabPanel.innerHTML = renderTeamView(team);
+        }
+      }
+      attachPanelListeners();
+    }
+
+    function renderSummary() {
+      const ranked = state.teams
+        .map(t => ({ team: t, totals: teamTotal(t) }))
+        .sort((a, b) => b.totals.total - a.totals.total);
+
+      return `
+        <div class="summary">
+          <h2>Tabla de posiciones (${ranked.length} ${ranked.length === 1 ? 'equipo' : 'equipos'})</h2>
+          <table>
+            <thead>
+              <tr>
+                <th style="width: 50px;">#</th>
+                <th>Equipo</th>
+                <th>Challenge 1</th>
+                <th>Challenge 2</th>
+                <th>Challenge 3</th>
+                <th>Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${ranked.length === 0 ? '<tr><td colspan="6" style="text-align: center; color: var(--text-soft); padding: 30px;">No hay equipos. Agrega uno con el botón + arriba.</td></tr>' :
+              ranked.map((r, i) => {
+                const medalClass = i === 0 ? 'gold' : i === 1 ? 'silver' : i === 2 ? 'bronze' : 'none';
+                const medalChar = i === 0 ? '1' : i === 1 ? '2' : i === 2 ? '3' : '—';
+                const rowClass = i < 3 ? ['gold', 'silver', 'bronze'][i] : '';
+                return `
+                  <tr class="${rowClass}">
+                    <td><span class="rank-medal ${medalClass}">${medalChar}</span></td>
+                    <td><strong>${escapeHtml(r.team.name)}</strong></td>
+                    <td><span class="score-pill c1">${r.totals.c1.toFixed(2)}</span></td>
+                    <td><span class="score-pill c2">${r.totals.c2.toFixed(2)}</span></td>
+                    <td><span class="score-pill c3">${r.totals.c3.toFixed(2)}</span></td>
+                    <td><span class="score-pill total">${r.totals.total.toFixed(2)} / ${r.totals.max}</span></td>
+                  </tr>
+                `;
+              }).join('')}
+            </tbody>
+          </table>
+        </div>
+      `;
+    }
+
+    function renderTeamView(team) {
+      const totals = teamTotal(team);
+      const activeSub = state.ui.activeSubTab || 'overview';
+
+      return `
+        <div class="team-header">
+          <input class="team-name-input" type="text" data-field="name" value="${escapeHtml(team.name)}" placeholder="Nombre del equipo">
+          <span class="team-total">${totals.total.toFixed(2)} / ${totals.max}</span>
+        </div>
+        <div class="subtab-bar">
+          <button class="subtab ${activeSub === 'overview' ? 'active' : ''}" data-challenge="overview">
+            Vista
+            <span class="subtab-score">${totals.total.toFixed(1)}</span>
+          </button>
+          <button class="subtab ${activeSub === 'c1' ? 'active' : ''}" data-challenge="c1">
+            <span class="subtab-tag">C1</span> Clasificador
+            <span class="subtab-score">${totals.c1.toFixed(1)}</span>
+          </button>
+          <button class="subtab ${activeSub === 'c2' ? 'active' : ''}" data-challenge="c2">
+            <span class="subtab-tag">C2</span> Validador
+            <span class="subtab-score">${totals.c2.toFixed(1)}</span>
+          </button>
+          <button class="subtab ${activeSub === 'c3' ? 'active' : ''}" data-challenge="c3">
+            <span class="subtab-tag">C3</span> Detector
+            <span class="subtab-score">${totals.c3.toFixed(1)}</span>
+          </button>
+        </div>
+        <div class="subtab-content">
+          ${activeSub === 'overview' ? renderOverview(team, totals) : ''}
+          ${activeSub === 'c1' ? renderChallenge1(team) : ''}
+          ${activeSub === 'c2' ? renderChallenge2(team) : ''}
+          ${activeSub === 'c3' ? renderChallenge3(team) : ''}
+        </div>
+      `;
+    }
+
+    function renderOverview(team, totals) {
+      return `
+        <div class="overview-grid">
+          ${['c1', 'c2', 'c3'].map(ch => {
+            const meta = CHALLENGE_META[ch];
+            const s = team.scores[ch];
+            const anatomyCount = ANATOMY_PARTS.filter(p => s.anatomy[p.id]).length;
+            return `
+              <div class="overview-card" data-overview-challenge="${ch}" style="cursor: pointer;">
+                <div class="overview-card-header">
+                  <div class="overview-card-title">
+                    <span class="subtab-tag" style="color: var(--${ch === 'c1' ? 'c1' : ch === 'c2' ? 'c2' : 'c3'});">${meta.short}</span>
+                    ${meta.name}
+                  </div>
+                  <div class="overview-card-score">${totals[ch].toFixed(1)}/10</div>
+                </div>
+                <div class="overview-stat">
+                  <span>TP / FP / FN</span>
+                  <strong>${s.tp} / ${s.fp} / ${s.fn}</strong>
+                </div>
+                ${ch === 'c1' ? `
+                  <div class="overview-stat">
+                    <span>Ambigüos bien</span>
+                    <strong>${s.ambiguous_correct} / ${TESTS.c1.ambiguous}</strong>
+                  </div>
+                ` : ''}
+                ${ch === 'c2' ? `
+                  <div class="overview-stat">
+                    <span>TN (casos limpios)</span>
+                    <strong>${s.tn} / ${TESTS.c2.clean}</strong>
+                  </div>
+                  <div class="overview-stat">
+                    <span>Críticas detectadas</span>
+                    <strong>${s.critical_found} / ${TESTS.c2.critical}</strong>
+                  </div>
+                ` : ''}
+                ${ch === 'c3' ? `
+                  <div class="overview-stat">
+                    <span>TN (casos limpios)</span>
+                    <strong>${s.tn} / 5</strong>
+                  </div>
+                  <div class="overview-stat">
+                    <span>Citas verbatim</span>
+                    <strong>${s.cite_verbatim}</strong>
+                  </div>
+                ` : ''}
+                <div class="overview-stat">
+                  <span>Anatomía</span>
+                  <strong>${anatomyCount}/7</strong>
+                </div>
+                <div class="anatomy-summary">
+                  ${ANATOMY_PARTS.map(p => `<span class="anatomy-chip ${s.anatomy[p.id] ? 'on' : 'off'}">${p.label}</span>`).join('')}
+                </div>
+                ${(ch === 'c2' || ch === 'c3') ? `
+                  <div class="overview-stat" style="margin-top: 8px;">
+                    <span>Restricción "no aprobar/rechazar"</span>
+                    <strong style="color: ${s.constraint_met ? 'var(--good)' : 'var(--text-faint)'};">${s.constraint_met ? '✓ Cumple' : '✗ No cumple'}</strong>
+                  </div>
+                ` : ''}
+              </div>
+            `;
+          }).join('')}
+        </div>
+      `;
+    }
+
+    function renderChallenge1(team) {
+      const s = team.scores.c1;
+      const br = teamTotal(team).breakdowns.c1;
+      return renderRubric(`
+        <div class="rubric">
+          <div class="rubric-row">
+            <div class="rubric-label"><strong>Verdaderos positivos</strong> (categoría correcta)<small>sobre ${TESTS.c1.total} casos de test</small></div>
+            <div class="rubric-control">
+              <input type="number" class="num-input" data-field="tp" min="0" max="${TESTS.c1.total}" value="${s.tp}">
+              <span class="num-max">/ ${TESTS.c1.total}</span>
+            </div>
+          </div>
+          <div class="rubric-row">
+            <div class="rubric-label"><strong>Falsos positivos</strong> (categoría incorrecta)</div>
+            <div class="rubric-control">
+              <input type="number" class="num-input" data-field="fp" min="0" value="${s.fp}">
+            </div>
+          </div>
+          <div class="rubric-row">
+            <div class="rubric-label"><strong>Falsos negativos</strong> (omitidos)</div>
+            <div class="rubric-control">
+              <input type="number" class="num-input" data-field="fn" min="0" value="${s.fn}">
+            </div>
+          </div>
+          <div class="rubric-row">
+            <div class="rubric-label"><strong>Casos ambiguos bien manejados</strong><small>de ${TESTS.c1.ambiguous} casos diseñados para eso</small></div>
+            <div class="rubric-control">
+              <input type="number" class="num-input" data-field="ambiguous_correct" min="0" max="${TESTS.c1.ambiguous}" value="${s.ambiguous_correct}">
+              <span class="num-max">/ ${TESTS.c1.ambiguous}</span>
+            </div>
+          </div>
+          ${renderAnatomyBlock(s)}
+          <div class="rubric-row">
+            <div class="rubric-label"><strong>Documentación de iteración</strong></div>
+            <div class="rubric-control">
+              <select class="select-input" data-field="documentation">
+                <option value="none" ${s.documentation === 'none' ? 'selected' : ''}>Ninguna</option>
+                <option value="brief" ${s.documentation === 'brief' ? 'selected' : ''}>Breve (1 párrafo)</option>
+                <option value="detailed" ${s.documentation === 'detailed' ? 'selected' : ''}>Detallada (cambios por iteración)</option>
+              </select>
+            </div>
+          </div>
+          <div class="rubric-row">
+            <div class="rubric-label"><strong>Eficiencia de tokens</strong></div>
+            <div class="rubric-control">
+              <select class="select-input" data-field="efficiency">
+                <option value="high" ${s.efficiency === 'high' ? 'selected' : ''}>Alta (pocos tokens)</option>
+                <option value="medium" ${s.efficiency === 'medium' ? 'selected' : ''}>Media</option>
+                <option value="low" ${s.efficiency === 'low' ? 'selected' : ''}>Baja (desperdicia)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="breakdown" data-breakdown="c1">
+          F1=${br.f1.value.toFixed(2)} (${br.f1.points}/${br.f1.max}) + ambig=${br.ambiguous.points}/${br.ambiguous.max} + anatomía=${br.anatomy.points}/${br.anatomy.max} + doc=${br.documentation.points}/${br.documentation.max} + efic=${br.efficiency.points}/${br.efficiency.max}${br.fp_penalty.points < 0 ? ` − penalidad FP=${Math.abs(br.fp_penalty.points)}` : ''}
+        </div>
+      `);
+    }
+
+    function renderChallenge2(team) {
+      const s = team.scores.c2;
+      const br = teamTotal(team).breakdowns.c2;
+      return renderRubric(`
+        <div class="rubric">
+          <div class="rubric-row">
+            <div class="rubric-label"><strong>Verdaderos positivos</strong> (alerta detectada correctamente)</div>
+            <div class="rubric-control">
+              <input type="number" class="num-input" data-field="tp" min="0" value="${s.tp}">
+            </div>
+          </div>
+          <div class="rubric-row">
+            <div class="rubric-label"><strong>Falsos positivos</strong> (alerta fantasma en caso limpio)</div>
+            <div class="rubric-control">
+              <input type="number" class="num-input" data-field="fp" min="0" value="${s.fp}">
+            </div>
+          </div>
+          <div class="rubric-row">
+            <div class="rubric-label"><strong>Falsos negativos</strong> (alerta no detectada)</div>
+            <div class="rubric-control">
+              <input type="number" class="num-input" data-field="fn" min="0" value="${s.fn}">
+            </div>
+          </div>
+          <div class="rubric-row">
+            <div class="rubric-label"><strong>Verdaderos negativos</strong> (caso limpio, "sin alertas")<small>de ${TESTS.c2.clean} casos limpios</small></div>
+            <div class="rubric-control">
+              <input type="number" class="num-input" data-field="tn" min="0" max="${TESTS.c2.clean}" value="${s.tn}">
+              <span class="num-max">/ ${TESTS.c2.clean}</span>
+            </div>
+          </div>
+          <div class="rubric-row">
+            <div class="rubric-label"><strong>Severidades EXACTAS correctas</strong></div>
+            <div class="rubric-control">
+              <input type="number" class="num-input" data-field="sev_exact" min="0" value="${s.sev_exact}">
+            </div>
+          </div>
+          <div class="rubric-row">
+            <div class="rubric-label"><strong>Severidades "cerca" (±1 nivel)</strong></div>
+            <div class="rubric-control">
+              <input type="number" class="num-input" data-field="sev_close" min="0" value="${s.sev_close}">
+            </div>
+          </div>
+          <div class="rubric-row">
+            <div class="rubric-label"><strong>Total alertas con severidad asignada</strong></div>
+            <div class="rubric-control">
+              <input type="number" class="num-input" data-field="sev_total" min="0" value="${s.sev_total}">
+            </div>
+          </div>
+          <div class="rubric-row">
+            <div class="rubric-label"><strong>Alertas CRÍTICAS detectadas</strong><small>de ${TESTS.c2.critical} críticas en ground truth</small></div>
+            <div class="rubric-control">
+              <input type="number" class="num-input" data-field="critical_found" min="0" max="${TESTS.c2.critical}" value="${s.critical_found}">
+              <span class="num-max">/ ${TESTS.c2.critical}</span>
+            </div>
+          </div>
+          ${renderAnatomyBlock(s)}
+          <div class="rubric-row">
+            <div class="rubric-label"><strong>Cumple restricción</strong> (no genera aprobación/rechazo)</div>
+            <div class="rubric-control">
+              <label class="checkbox-label ${s.constraint_met ? 'checked' : ''}">
+                <input type="checkbox" data-field="constraint_met" ${s.constraint_met ? 'checked' : ''}>
+                Cumple
+              </label>
+            </div>
+          </div>
+          <div class="rubric-row">
+            <div class="rubric-label"><strong>Eficiencia de tokens</strong></div>
+            <div class="rubric-control">
+              <select class="select-input" data-field="efficiency">
+                <option value="high" ${s.efficiency === 'high' ? 'selected' : ''}>Alta</option>
+                <option value="medium" ${s.efficiency === 'medium' ? 'selected' : ''}>Media</option>
+                <option value="low" ${s.efficiency === 'low' ? 'selected' : ''}>Baja</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="breakdown" data-breakdown="c2">
+          F1=${br.f1.value.toFixed(2)} (${br.f1.points}) + sev=${br.severity.points} + TN=${br.tn.points} + críticas=${br.critical.points} + anatomía=${br.anatomy.points} + restricción=${br.constraint.points} + efic=${br.efficiency.points}
+        </div>
+      `);
+    }
+
+    function renderChallenge3(team) {
+      const s = team.scores.c3;
+      const br = teamTotal(team).breakdowns.c3;
+      return renderRubric(`
+        <div class="rubric">
+          <div class="rubric-row">
+            <div class="rubric-label"><strong>Verdaderos positivos</strong> (inconsistencia detectada)</div>
+            <div class="rubric-control">
+              <input type="number" class="num-input" data-field="tp" min="0" value="${s.tp}">
+            </div>
+          </div>
+          <div class="rubric-row">
+            <div class="rubric-label"><strong>Falsos positivos</strong> (inconsistencia inventada)</div>
+            <div class="rubric-control">
+              <input type="number" class="num-input" data-field="fp" min="0" value="${s.fp}">
+            </div>
+          </div>
+          <div class="rubric-row">
+            <div class="rubric-label"><strong>Falsos negativos</strong> (inconsistencia no detectada)</div>
+            <div class="rubric-control">
+              <input type="number" class="num-input" data-field="fn" min="0" value="${s.fn}">
+            </div>
+          </div>
+          <div class="rubric-row">
+            <div class="rubric-label"><strong>Verdaderos negativos</strong> (caso limpio, "sin inconsistencias")</div>
+            <div class="rubric-control">
+              <input type="number" class="num-input" data-field="tn" min="0" max="5" value="${s.tn}">
+              <span class="num-max">/ 5</span>
+            </div>
+          </div>
+          <div class="rubric-row">
+            <div class="rubric-label"><strong>Citas VERBATIM</strong> (texto exacto de la transcripción)</div>
+            <div class="rubric-control">
+              <input type="number" class="num-input" data-field="cite_verbatim" min="0" value="${s.cite_verbatim}">
+            </div>
+          </div>
+          <div class="rubric-row">
+            <div class="rubric-label"><strong>Citas PARAFRASEADAS</strong> (correctas pero no literales)</div>
+            <div class="rubric-control">
+              <input type="number" class="num-input" data-field="cite_paraphrased" min="0" value="${s.cite_paraphrased}">
+            </div>
+          </div>
+          <div class="rubric-row">
+            <div class="rubric-label"><strong>Citas INVENTADAS</strong> (no están en la transcripción)</div>
+            <div class="rubric-control">
+              <input type="number" class="num-input" data-field="cite_invented" min="0" value="${s.cite_invented}">
+            </div>
+          </div>
+          <div class="rubric-row">
+            <div class="rubric-label"><strong>Severidades EXACTAS correctas</strong></div>
+            <div class="rubric-control">
+              <input type="number" class="num-input" data-field="sev_exact" min="0" value="${s.sev_exact}">
+            </div>
+          </div>
+          <div class="rubric-row">
+            <div class="rubric-label"><strong>Severidades "cerca" (±1 nivel)</strong></div>
+            <div class="rubric-control">
+              <input type="number" class="num-input" data-field="sev_close" min="0" value="${s.sev_close}">
+            </div>
+          </div>
+          <div class="rubric-row">
+            <div class="rubric-label"><strong>Total alertas con severidad</strong></div>
+            <div class="rubric-control">
+              <input type="number" class="num-input" data-field="sev_total" min="0" value="${s.sev_total}">
+            </div>
+          </div>
+          <div class="rubric-row">
+            <div class="rubric-label"><strong>Tipos de inconsistencia CORRECTOS</strong></div>
+            <div class="rubric-control">
+              <input type="number" class="num-input" data-field="type_correct" min="0" value="${s.type_correct}">
+            </div>
+          </div>
+          <div class="rubric-row">
+            <div class="rubric-label"><strong>Total inconsistencias reportadas</strong></div>
+            <div class="rubric-control">
+              <input type="number" class="num-input" data-field="type_total" min="0" value="${s.type_total}">
+            </div>
+          </div>
+          ${renderAnatomyBlock(s)}
+          <div class="rubric-row">
+            <div class="rubric-label"><strong>Cumple restricción</strong> (no genera aprobación/rechazo)</div>
+            <div class="rubric-control">
+              <label class="checkbox-label ${s.constraint_met ? 'checked' : ''}">
+                <input type="checkbox" data-field="constraint_met" ${s.constraint_met ? 'checked' : ''}>
+                Cumple
+              </label>
+            </div>
+          </div>
+          <div class="rubric-row">
+            <div class="rubric-label"><strong>Eficiencia de tokens</strong></div>
+            <div class="rubric-control">
+              <select class="select-input" data-field="efficiency">
+                <option value="high" ${s.efficiency === 'high' ? 'selected' : ''}>Alta</option>
+                <option value="medium" ${s.efficiency === 'medium' ? 'selected' : ''}>Media</option>
+                <option value="low" ${s.efficiency === 'low' ? 'selected' : ''}>Baja</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="breakdown" data-breakdown="c3">
+          F1=${br.f1.value.toFixed(2)} (${br.f1.points}) + citas=${br.citations.points} + sev=${br.severity.points} + tipos=${br.type.points} + TN=${br.tn.points} + anatomía=${br.anatomy.points} + restricción=${br.constraint.points} + efic=${br.efficiency.points}
+        </div>
+      `);
+    }
+
+    function renderRubric(html) { return html; }
+
+    function renderAnatomyBlock(s) {
+      return `
+        <div class="rubric-row">
+          <div class="rubric-label"><strong>Anatomía del prompt</strong> (7 partes)<small>Marca las partes que el prompt del equipo tiene</small></div>
+          <div class="rubric-control" style="flex-direction: column; align-items: stretch; min-width: 280px;">
+            <div class="anatomy-grid">
+              ${ANATOMY_PARTS.map(p => `
+                <label class="anatomy-item ${s.anatomy[p.id] ? 'checked' : ''}">
+                  <input type="checkbox" data-anatomy="${p.id}" ${s.anatomy[p.id] ? 'checked' : ''}>
+                  ${p.label}
+                </label>
+              `).join('')}
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    // ─── Event listeners ───
+    function attachPanelListeners() {
+      // Tab clicks
+      document.querySelectorAll('.tab[data-tab-id]').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          // Ignore clicks on the close button
+          if (e.target.matches('[data-close-team]')) return;
+          state.ui.activeTab = btn.dataset.tabId;
+          state.ui.activeSubTab = 'overview';
+          persist();
+          render();
+        });
+      });
+
+      // Close team button
+      document.querySelectorAll('[data-close-team]').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const teamId = btn.dataset.closeTeam;
+          if (confirm('¿Eliminar este equipo? Sus datos se perderán.')) {
+            state.teams = state.teams.filter(t => t.id !== teamId);
+            if (state.ui.activeTab === teamId) {
+              state.ui.activeTab = state.teams[0]?.id || '__summary';
+            }
+            persist();
+            render();
+          }
+        });
+      });
+
+      // Add team
+      document.querySelectorAll('[data-action="add-team"]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const id = 'team-' + Date.now();
+          state.teams.push({
+            id,
+            name: `Equipo ${state.teams.length + 1}`,
+            scores: { c1: defaultScores('c1'), c2: defaultScores('c2'), c3: defaultScores('c3') },
+          });
+          state.ui.activeTab = id;
+          state.ui.activeSubTab = 'overview';
+          persist();
+          render();
+        });
+      });
+
+      // Sub-tab clicks
+      document.querySelectorAll('.subtab').forEach(btn => {
+        btn.addEventListener('click', () => {
+          state.ui.activeSubTab = btn.dataset.challenge;
+          persist();
+          // Update sub-tab bar only (don't re-render the whole form to avoid losing focus)
+          updateSubTabBar(btn.dataset.challenge);
+          document.querySelector('.subtab-content').innerHTML = renderActiveSubTab();
+          attachFormListeners();
+        });
+      });
+
+      // Overview card click → jump to sub-tab
+      document.querySelectorAll('.overview-card[data-overview-challenge]').forEach(card => {
+        card.addEventListener('click', () => {
+          state.ui.activeSubTab = card.dataset.overviewChallenge;
+          persist();
+          updateSubTabBar(card.dataset.overviewChallenge);
+          document.querySelector('.subtab-content').innerHTML = renderActiveSubTab();
+          attachFormListeners();
+        });
+      });
+
+      attachFormListeners();
+      attachTeamHeaderListener();
+    }
+
+    function updateSubTabBar(activeCh) {
+      document.querySelectorAll('.subtab').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.challenge === activeCh);
+      });
+    }
+
+    function renderActiveSubTab() {
+      const team = state.teams.find(t => t.id === state.ui.activeTab);
+      if (!team) return '';
+      if (state.ui.activeSubTab === 'overview') return renderOverview(team, teamTotal(team));
+      if (state.ui.activeSubTab === 'c1') return renderChallenge1(team);
+      if (state.ui.activeSubTab === 'c2') return renderChallenge2(team);
+      if (state.ui.activeSubTab === 'c3') return renderChallenge3(team);
+      return '';
+    }
+
+    function attachTeamHeaderListener() {
+      const nameInput = document.querySelector('.team-name-input');
+      if (nameInput) {
+        nameInput.addEventListener('input', (e) => {
+          const team = state.teams.find(t => t.id === state.ui.activeTab);
+          if (team) {
+            team.name = e.target.value;
+            persist();
+            // Update tab label live
+            const tab = document.querySelector(`.tab[data-tab-id="${team.id}"]`);
+            if (tab) {
+              const scoreSpan = tab.querySelector('.tab-score');
+              if (scoreSpan) {
+                tab.firstChild.textContent = e.target.value + ' ';
+              }
+            }
+          }
+        });
+        nameInput.addEventListener('blur', () => {
+          // Re-render to update positions if needed
+          render();
+        });
+      }
+    }
+
+    function attachFormListeners() {
+      // Number inputs
+      document.querySelectorAll('.num-input').forEach(input => {
+        input.addEventListener('input', (e) => {
+          const field = e.target.dataset.field;
+          const value = parseInt(e.target.value) || 0;
+          const team = state.teams.find(t => t.id === state.ui.activeTab);
+          if (!team) return;
+          const sub = state.ui.activeSubTab;
+          if (!['c1', 'c2', 'c3'].includes(sub)) return;
+          team.scores[sub][field] = value;
+          persist();
+          updateScoresLive(team);
+        });
+      });
+
+      // Anatomy checkboxes
+      document.querySelectorAll('input[data-anatomy]').forEach(input => {
+        input.addEventListener('change', (e) => {
+          const part = e.target.dataset.anatomy;
+          const team = state.teams.find(t => t.id === state.ui.activeTab);
+          if (!team) return;
+          const sub = state.ui.activeSubTab;
+          if (!['c1', 'c2', 'c3'].includes(sub)) return;
+          team.scores[sub].anatomy[part] = e.target.checked;
+          // Update anatomy item style
+          e.target.closest('.anatomy-item').classList.toggle('checked', e.target.checked);
+          persist();
+          updateScoresLive(team);
+        });
+      });
+
+      // Selects
+      document.querySelectorAll('.select-input').forEach(input => {
+        input.addEventListener('change', (e) => {
+          const field = e.target.dataset.field;
+          const team = state.teams.find(t => t.id === state.ui.activeTab);
+          if (!team) return;
+          const sub = state.ui.activeSubTab;
+          if (!['c1', 'c2', 'c3'].includes(sub)) return;
+          team.scores[sub][field] = e.target.value;
+          persist();
+          updateScoresLive(team);
+        });
+      });
+
+      // Constraint checkboxes
+      document.querySelectorAll('input[data-field="constraint_met"]').forEach(input => {
+        input.addEventListener('change', (e) => {
+          const team = state.teams.find(t => t.id === state.ui.activeTab);
+          if (!team) return;
+          const sub = state.ui.activeSubTab;
+          if (!['c1', 'c2', 'c3'].includes(sub)) return;
+          team.scores[sub].constraint_met = e.target.checked;
+          e.target.closest('.checkbox-label').classList.toggle('checked', e.target.checked);
+          persist();
+          updateScoresLive(team);
+        });
+      });
+    }
+
+    function updateScoresLive(team) {
+      const totals = teamTotal(team);
+      // Update total in header
+      const totalEl = document.querySelector('.team-total');
+      if (totalEl) {
+        totalEl.textContent = `${totals.total.toFixed(2)} / ${totals.max}`;
+        totalEl.classList.toggle('maxed', totals.total === totals.max);
+      }
+      // Update tab score
+      const tabScore = document.querySelector(`.tab[data-tab-id="${team.id}"] .tab-score`);
+      if (tabScore) tabScore.textContent = `${totals.total.toFixed(1)}/${totals.max}`;
+      // Update sub-tab scores
+      document.querySelectorAll('.subtab').forEach(btn => {
+        const ch = btn.dataset.challenge;
+        if (ch === 'overview') {
+          const span = btn.querySelector('.subtab-score');
+          if (span) span.textContent = totals.total.toFixed(1);
+        } else if (['c1', 'c2', 'c3'].includes(ch)) {
+          const span = btn.querySelector('.subtab-score');
+          if (span) span.textContent = totals[ch].toFixed(1);
+        }
+      });
+      // Update breakdown for active sub-tab if it's a challenge (not overview)
+      const activeSub = state.ui.activeSubTab;
+      if (['c1', 'c2', 'c3'].includes(activeSub)) {
+        const br = totals.breakdowns[activeSub];
+        const breakdownEl = document.querySelector(`.breakdown[data-breakdown="${activeSub}"]`);
+        if (breakdownEl) {
+          if (activeSub === 'c1') {
+            breakdownEl.textContent = `F1=${br.f1.value.toFixed(2)} (${br.f1.points}/${br.f1.max}) + ambig=${br.ambiguous.points}/${br.ambiguous.max} + anatomía=${br.anatomy.points}/${br.anatomy.max} + doc=${br.documentation.points}/${br.documentation.max} + efic=${br.efficiency.points}/${br.efficiency.max}${br.fp_penalty.points < 0 ? ` − penalidad FP=${Math.abs(br.fp_penalty.points)}` : ''}`;
+          } else if (activeSub === 'c2') {
+            breakdownEl.textContent = `F1=${br.f1.value.toFixed(2)} (${br.f1.points}) + sev=${br.severity.points} + TN=${br.tn.points} + críticas=${br.critical.points} + anatomía=${br.anatomy.points} + restricción=${br.constraint.points} + efic=${br.efficiency.points}`;
+          } else if (activeSub === 'c3') {
+            breakdownEl.textContent = `F1=${br.f1.value.toFixed(2)} (${br.f1.points}) + citas=${br.citations.points} + sev=${br.severity.points} + tipos=${br.type.points} + TN=${br.tn.points} + anatomía=${br.anatomy.points} + restricción=${br.constraint.points} + efic=${br.efficiency.points}`;
+          }
+        }
+      }
+    }
+
+    // ─── Toolbar ───
+    document.getElementById('reset-all-btn').addEventListener('click', () => {
+      if (confirm('¿Reiniciar TODOS los datos? Se perderán las calificaciones.')) {
+        state = defaultState();
+        localStorage.removeItem(STORAGE_KEY);
+        render();
+      }
+    });
+
+    document.getElementById('export-json-btn').addEventListener('click', () => {
+      const data = {
+        timestamp: new Date().toISOString(),
+        teams: state.teams.map(t => ({
+          name: t.name,
+          totals: teamTotal(t),
+          scores: t.scores,
+        })),
+      };
+      downloadFile('scoring-resultados.json', JSON.stringify(data, null, 2), 'application/json');
+    });
+
+    document.getElementById('export-csv-btn').addEventListener('click', () => {
+      const rows = [['Equipo', 'C1', 'C2', 'C3', 'Total', 'Maximo']];
+      state.teams.forEach(t => {
+        const totals = teamTotal(t);
+        rows.push([t.name, totals.c1.toFixed(2), totals.c2.toFixed(2), totals.c3.toFixed(2), totals.total.toFixed(2), totals.max]);
+      });
+      const csv = rows.map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n');
+      downloadFile('scoring-resultados.csv', csv, 'text/csv');
+    });
+
+    document.getElementById('print-btn').addEventListener('click', () => window.print());
+
+    function downloadFile(filename, content, type) {
+      const blob = new Blob([content], { type });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function escapeHtml(s) {
+      return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+    }
+
+    // Initial render
+    render();
+  </script>
+</body>
+</html>
