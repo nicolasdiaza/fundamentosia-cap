@@ -147,6 +147,14 @@ except ValueError:
           "se usará una división simple (sin stratify).")
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=PORCENTAJE_TEST, random_state=42)
 
+# Con un dataset de historia muy chico y desbalanceado, incluso el split simple puede dejar
+# una sola clase en entrenamiento; en ese caso no hay modelo que entrenar, así que se avisa y se detiene.
+if y_train.nunique() < 2:
+    print(f"\n  El set de entrenamiento quedó con una sola clase ({len(y_train)} filas); "
+          "no se puede entrenar un clasificador. Vuelve a ejecutar 'generar_datasets.py' "
+          "con un dataset de historia más grande.")
+    exit()
+
 # KNN necesita al menos tantos vecinos como filas de entrenamiento tenga disponibles
 if opcion_algo == "5" and n_neighbors > len(X_train):
     print(f"  n_neighbors ({n_neighbors}) supera el tamaño de entrenamiento ({len(X_train)}); se ajusta a {len(X_train)}.")
