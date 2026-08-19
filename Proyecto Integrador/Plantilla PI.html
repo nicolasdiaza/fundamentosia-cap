@@ -1,0 +1,2367 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Diseñador de Procesos IA — Migración Panamá</title>
+<style>
+  :root {
+    --bg: #f4f6fb;
+    --panel: #ffffff;
+    --panel-soft: #f8fafc;
+    --border: #e2e8f0;
+    --border-strong: #cbd5e1;
+    --text: #0f172a;
+    --text-muted: #64748b;
+    --text-soft: #94a3b8;
+    --primary: #2563eb;
+    --primary-soft: #dbeafe;
+    --primary-dark: #1d4ed8;
+    --success: #10b981;
+    --success-soft: #d1fae5;
+    --warning: #f59e0b;
+    --warning-soft: #fef3c7;
+    --danger: #ef4444;
+    --danger-soft: #fee2e2;
+    --human: #f97316;
+    --human-soft: #ffedd5;
+    --ai: #8b5cf6;
+    --ai-soft: #ede9fe;
+    --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.06);
+    --shadow: 0 1px 3px rgba(15, 23, 42, 0.08), 0 1px 2px rgba(15, 23, 42, 0.04);
+    --shadow-lg: 0 10px 25px rgba(15, 23, 42, 0.1), 0 4px 10px rgba(15, 23, 42, 0.04);
+    --radius: 10px;
+    --radius-sm: 6px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body { height: 100%; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Inter", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    font-size: 14px;
+    line-height: 1.4;
+  }
+
+  button {
+    font: inherit;
+    cursor: pointer;
+    border: 1px solid var(--border);
+    background: white;
+    color: var(--text);
+    padding: 6px 12px;
+    border-radius: var(--radius-sm);
+    transition: all 0.15s;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+  }
+  button:hover { background: var(--panel-soft); border-color: var(--border-strong); }
+  button:active { transform: translateY(1px); }
+  button.primary { background: var(--primary); color: white; border-color: var(--primary); }
+  button.primary:hover { background: var(--primary-dark); }
+  button.ghost { background: transparent; border-color: transparent; }
+  button.ghost:hover { background: var(--panel-soft); }
+  button.danger { color: var(--danger); }
+  button.danger:hover { background: var(--danger-soft); border-color: var(--danger); }
+  button.active { background: var(--primary-soft); border-color: var(--primary); color: var(--primary-dark); }
+  button.icon-only { padding: 6px 8px; }
+
+  input, textarea, select {
+    font: inherit;
+    color: var(--text);
+    background: white;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-sm);
+    padding: 7px 10px;
+    width: 100%;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  input:focus, textarea:focus, select:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+  }
+  /* Placeholder más visible como "ayuda" y menos como "valor" */
+  input::placeholder, textarea::placeholder {
+    color: var(--text-soft);
+    font-style: italic;
+    opacity: 0.85;
+  }
+  textarea { resize: vertical; min-height: 70px; font-family: inherit; }
+  label { display: block; font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.04em; }
+
+  /* ===== Header ===== */
+  header {
+    background: white;
+    border-bottom: 1px solid var(--border);
+    padding: 10px 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    box-shadow: var(--shadow-sm);
+    z-index: 10;
+  }
+  .brand { display: flex; align-items: center; gap: 12px; }
+  .brand-icon {
+    width: 38px; height: 38px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #2563eb 0%, #8b5cf6 100%);
+    display: flex; align-items: center; justify-content: center;
+    color: white; font-size: 20px;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+  }
+  .brand h1 { font-size: 15px; font-weight: 700; line-height: 1.1; }
+  .brand p { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+  .header-actions { margin-left: auto; display: flex; gap: 6px; flex-wrap: wrap; }
+
+  /* ===== Main grid ===== */
+  main {
+    display: grid;
+    grid-template-columns: 270px 1fr 320px;
+    flex: 1;
+    min-height: 0;
+  }
+
+  /* ===== Sidebars ===== */
+  .palette, .inspector {
+    background: var(--panel);
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+  }
+  .palette { border-right: 1px solid var(--border); }
+  .inspector { border-left: 1px solid var(--border); }
+
+  .panel-section {
+    padding: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .panel-section:last-child { border-bottom: none; }
+  .panel-section h2 {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-muted);
+    margin-bottom: 10px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .panel-section .hint {
+    font-size: 11px;
+    color: var(--text-soft);
+    margin-bottom: 10px;
+  }
+
+  /* Palette items */
+  .palette-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+  .palette-item {
+    background: white;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 10px 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    cursor: grab;
+    transition: all 0.15s;
+    user-select: none;
+    text-align: center;
+  }
+  .palette-item:hover {
+    border-color: var(--primary);
+    background: var(--primary-soft);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow);
+  }
+  .palette-item:active { cursor: grabbing; }
+  .palette-item .pi-icon { font-size: 22px; line-height: 1; }
+  .palette-item .pi-label { font-size: 11px; font-weight: 600; color: var(--text); }
+
+  /* AI palette items get a colored left border to hint the node will have that color */
+  .palette-item--ai {
+    border-left: 4px solid var(--ai-color, var(--primary));
+    padding-left: 6px;
+  }
+  .palette-item--ai:hover { border-color: var(--ai-color, var(--primary)); background: color-mix(in srgb, var(--ai-color, var(--primary)) 8%, white); }
+
+  .tips {
+    list-style: none;
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+  .tips li {
+    padding: 6px 0 6px 22px;
+    position: relative;
+    line-height: 1.5;
+  }
+  .tips li::before {
+    content: "💡";
+    position: absolute;
+    left: 0;
+    top: 5px;
+  }
+
+  /* ===== Canvas ===== */
+  .canvas-container {
+    position: relative;
+    overflow: auto;
+    background: var(--bg);
+    display: flex;
+    flex-direction: column;
+  }
+  .canvas-toolbar {
+    background: white;
+    border-bottom: 1px solid var(--border);
+    padding: 8px 14px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+
+  /* Project bar (información del proyecto) */
+  .project-bar {
+    background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+    position: sticky;
+    top: 0;
+    z-index: 5;
+  }
+  .project-toggle {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    background: none;
+    border: none;
+    border-radius: 0;
+    cursor: pointer;
+    text-align: left;
+    font-size: 13px;
+    color: var(--text);
+    font-weight: 400;
+  }
+  .project-toggle:hover { background: var(--panel-soft); }
+  .project-toggle .project-icon { font-size: 14px; }
+  .project-toggle .project-toggle-label { color: var(--text-muted); font-size: 12px; }
+  .project-toggle .project-name { font-weight: 600; flex: 1; }
+  .project-toggle .project-toggle-icon { color: var(--text-muted); font-size: 11px; transition: transform 0.15s; }
+  .project-toggle[aria-expanded="true"] .project-toggle-icon { transform: rotate(180deg); }
+  .project-fields {
+    padding: 4px 14px 12px;
+    border-top: 1px dashed var(--border);
+    display: grid;
+    gap: 8px;
+  }
+  .project-fields[hidden] { display: none; }
+  .project-fields .field { margin-bottom: 0; }
+  .project-fields textarea { min-height: 50px; }
+  .canvas-toolbar .spacer { flex: 1; }
+  .canvas-toolbar .status {
+    font-size: 12px;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .canvas-toolbar .status .dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--success);
+  }
+  .canvas-toolbar .status.connecting .dot { background: var(--warning); }
+
+  .canvas {
+    position: relative;
+    flex: 1;
+    min-height: 1000px;
+    min-width: 1400px;
+    background-color: #fafbfc;
+    background-image:
+      radial-gradient(circle, #d1d5db 1px, transparent 1px);
+    background-size: 20px 20px;
+    background-position: -1px -1px;
+  }
+  .canvas.connect-mode { cursor: crosshair; }
+  .canvas.connect-mode .node { cursor: crosshair; }
+  .canvas.connect-mode .node:hover { box-shadow: 0 0 0 3px var(--warning); }
+
+  .connections-layer {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 3;
+  }
+  .connections-layer path {
+    pointer-events: stroke;
+    cursor: pointer;
+  }
+  .connections-layer path:hover:not(.connection-hit) { stroke: var(--primary) !important; }
+  .connections-layer .connection-hit { stroke: transparent; stroke-width: 14; fill: none; }
+  .connections-layer .connection-hit:hover { stroke: transparent !important; }
+
+  .nodes-layer {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+  }
+
+  /* ===== Nodes ===== */
+  .node {
+    position: absolute;
+    min-width: 170px;
+    max-width: 230px;
+    background: white;
+    border: 2px solid var(--border-strong);
+    border-radius: var(--radius);
+    padding: 12px 14px;
+    cursor: move;
+    user-select: none;
+    box-shadow: var(--shadow);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    transition: box-shadow 0.12s, border-color 0.12s, transform 0.05s;
+  }
+  .node:hover { box-shadow: var(--shadow-lg); }
+  .node.selected {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.18), var(--shadow-lg);
+  }
+  .node.connect-source {
+    border-color: var(--warning);
+    box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.25), var(--shadow-lg);
+  }
+  .node.dragging { opacity: 0.85; }
+
+  .node__header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .node__icon {
+    width: 26px; height: 26px;
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px;
+    flex-shrink: 0;
+  }
+  .node__type-label {
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-soft);
+    font-weight: 700;
+  }
+  .node__label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    line-height: 1.3;
+    word-wrap: break-word;
+  }
+
+  /* Node type variants */
+  .node--start {
+    min-width: 110px; min-height: 110px;
+    width: 110px; height: 110px;
+    border-radius: 50%;
+    background: var(--success-soft);
+    border-color: var(--success);
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 12px;
+  }
+  .node--start .node__header { flex-direction: column; gap: 4px; }
+  .node--start .node__icon { background: var(--success); color: white; }
+  .node--start .node__type-label { color: #047857; }
+  .node--start .node__label { color: #064e3b; }
+
+  .node--end {
+    min-width: 110px; min-height: 110px;
+    width: 110px; height: 110px;
+    border-radius: 50%;
+    background: var(--danger-soft);
+    border-color: var(--danger);
+    border-width: 3px;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 12px;
+  }
+  .node--end .node__header { flex-direction: column; gap: 4px; }
+  .node--end .node__icon { background: var(--danger); color: white; }
+  .node--end .node__type-label { color: #b91c1c; }
+  .node--end .node__label { color: #7f1d1d; }
+
+  .node--task .node__icon { background: #e0e7ff; color: #3730a3; }
+  .node--task .node__type-label { color: #4338ca; }
+
+  .node--decision {
+    min-width: 90px; min-height: 90px;
+    width: 90px; height: 90px;
+    background: var(--warning-soft);
+    border-color: var(--warning);
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    transform: rotate(45deg);
+    padding: 6px;
+  }
+  .node--decision .node__inner { transform: rotate(-45deg); width: 100%; }
+  .node--decision .node__icon { background: var(--warning); color: white; width: 18px; height: 18px; font-size: 10px; }
+  .node--decision .node__type-label { color: #b45309; font-size: 8px; }
+  .node--decision .node__label { color: #78350f; font-size: 10px; line-height: 1.15; }
+
+  .node--human {
+    background: var(--human-soft);
+    border-color: var(--human);
+    border-width: 2.5px;
+  }
+  .node--human .node__icon { background: var(--human); color: white; }
+  .node--human .node__type-label { color: #c2410c; }
+
+  /* Nodos de capacidad IA — se distinguen por su color de acento (borde izquierdo) */
+  .node--llm, .node--prompt, .node--rag, .node--ml, .node--dl,
+  .node--cv, .node--ocr, .node--docintel, .node--agents, .node--rpa {
+    background: white;
+    border-left-width: 5px;
+    padding-left: 11px;
+  }
+  .node--llm      { border-left-color: #2563eb; }
+  .node--prompt   { border-left-color: #0891b2; }
+  .node--rag      { border-left-color: #7c3aed; }
+  .node--ml       { border-left-color: #0d9488; }
+  .node--dl       { border-left-color: #4f46e5; }
+  .node--cv       { border-left-color: #db2777; }
+  .node--ocr      { border-left-color: #d97706; }
+  .node--docintel { border-left-color: #ca8a04; }
+  .node--agents   { border-left-color: #ea580c; }
+  .node--rpa      { border-left-color: #475569; }
+  .node--llm .node__icon, .node--prompt .node__icon, .node--rag .node__icon,
+  .node--ml .node__icon, .node--dl .node__icon, .node--cv .node__icon,
+  .node--ocr .node__icon, .node--docintel .node__icon, .node--agents .node__icon,
+  .node--rpa .node__icon { color: white; }
+  .node--llm .node__icon      { background: #2563eb; }
+  .node--prompt .node__icon   { background: #0891b2; }
+  .node--rag .node__icon      { background: #7c3aed; }
+  .node--ml .node__icon       { background: #0d9488; }
+  .node--dl .node__icon       { background: #4f46e5; }
+  .node--cv .node__icon       { background: #db2777; }
+  .node--ocr .node__icon      { background: #d97706; }
+  .node--docintel .node__icon { background: #ca8a04; }
+  .node--agents .node__icon   { background: #ea580c; }
+  .node--rpa .node__icon      { background: #475569; }
+
+  /* Connection preview line */
+  .connection-preview {
+    stroke: var(--warning);
+    stroke-width: 2;
+    stroke-dasharray: 6 4;
+    fill: none;
+    pointer-events: none;
+  }
+
+  /* ===== Inspector ===== */
+  .inspector-empty {
+    padding: 40px 20px;
+    text-align: center;
+    color: var(--text-soft);
+  }
+  .inspector-empty .ie-icon { font-size: 32px; margin-bottom: 10px; opacity: 0.5; }
+  .inspector-empty p { font-size: 13px; }
+
+  .inspector-content { padding: 16px; }
+  .inspector-content .ie-header {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .inspector-content .ie-header-icon {
+    width: 36px; height: 36px;
+    border-radius: 8px;
+    background: var(--primary-soft);
+    color: var(--primary);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+  }
+  .inspector-content .ie-header-text h3 { font-size: 14px; font-weight: 700; }
+  .inspector-content .ie-header-text p { font-size: 11px; color: var(--text-muted); }
+
+  .field { margin-bottom: 14px; }
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+  .info-box {
+    padding: 10px 12px;
+    background: var(--panel-soft);
+    border-left: 3px solid var(--primary);
+    border-radius: var(--radius-sm);
+    font-size: 12px;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+  .info-box.warning { border-color: var(--warning); background: var(--warning-soft); color: #92400e; }
+  .info-box.human { border-color: var(--human); background: var(--human-soft); color: #9a3412; }
+
+  /* Sección de detalles técnicos (campos diferenciados por IA) */
+  .details-section {
+    margin: 6px 0 14px;
+    padding: 12px;
+    background: linear-gradient(180deg, var(--panel-soft) 0%, transparent 100%);
+    border: 1px dashed var(--border);
+    border-radius: var(--radius);
+  }
+  .details-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-weight: 700;
+  }
+  .details-hint {
+    font-size: 9px;
+    font-weight: 500;
+    text-transform: none;
+    letter-spacing: 0;
+    opacity: 0.6;
+  }
+  .details-field {
+    margin-bottom: 10px;
+  }
+  .details-field:last-child {
+    margin-bottom: 0;
+  }
+
+  /* ===== Footer ===== */
+  footer {
+    background: white;
+    border-top: 1px solid var(--border);
+    padding: 6px 20px;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+  footer .spacer { flex: 1; }
+  footer .indicator { display: flex; align-items: center; gap: 5px; }
+  footer .indicator .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--success); }
+
+  /* ===== Modal ===== */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    padding: 20px;
+    backdrop-filter: blur(2px);
+  }
+  .modal-overlay[hidden] { display: none; }
+  .modal {
+    background: white;
+    border-radius: 14px;
+    box-shadow: var(--shadow-lg);
+    max-width: 720px;
+    width: 100%;
+    max-height: 86vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  .modal-header {
+    padding: 18px 22px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+  }
+  .modal-header h2 { font-size: 16px; font-weight: 700; }
+  .modal-header .close {
+    margin-left: auto;
+    background: transparent;
+    border: none;
+    font-size: 22px;
+    color: var(--text-muted);
+    padding: 0 6px;
+  }
+  .modal-body { padding: 20px 22px; overflow-y: auto; flex: 1; }
+  .modal-footer {
+    padding: 14px 22px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+  }
+
+  .template-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+  .template-card {
+    padding: 14px;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: all 0.15s;
+    background: white;
+    text-align: left;
+  }
+  .template-card:hover {
+    border-color: var(--primary);
+    background: var(--primary-soft);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow);
+  }
+  .template-card h3 { font-size: 13px; font-weight: 700; margin-bottom: 4px; }
+  .template-card p { font-size: 11px; color: var(--text-muted); line-height: 1.4; }
+
+  /* Welcome banner */
+  .welcome-banner {
+    background: linear-gradient(135deg, #2563eb 0%, #8b5cf6 100%);
+    color: white;
+    padding: 18px 24px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .welcome-banner .wb-text { flex: 1; }
+  .welcome-banner h2 { font-size: 15px; font-weight: 700; }
+  .welcome-banner p { font-size: 12px; opacity: 0.9; margin-top: 3px; }
+  .welcome-banner button { background: rgba(255,255,255,0.2); border-color: rgba(255,255,255,0.3); color: white; }
+  .welcome-banner button:hover { background: rgba(255,255,255,0.3); }
+  .welcome-banner .wb-close { background: transparent; border: none; color: white; opacity: 0.7; }
+  .welcome-banner .wb-close:hover { opacity: 1; background: transparent; }
+
+  /* Empty canvas message */
+  .empty-state {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: var(--text-soft);
+    pointer-events: none;
+    z-index: 0;
+  }
+  .empty-state[hidden] { display: none; }
+  .empty-state .es-icon { font-size: 56px; opacity: 0.4; margin-bottom: 14px; }
+  .empty-state h2 { font-size: 18px; color: var(--text-muted); margin-bottom: 6px; }
+  .empty-state p { font-size: 13px; max-width: 360px; }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    bottom: 50px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--text);
+    color: white;
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    box-shadow: var(--shadow-lg);
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.25s;
+    z-index: 200;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  .toast.success { background: var(--success); }
+  .toast.warning { background: var(--warning); }
+  .toast.danger { background: var(--danger); }
+
+  /* Scrollbar styling */
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 5px; border: 2px solid var(--panel); }
+  ::-webkit-scrollbar-thumb:hover { background: var(--text-soft); }
+
+  @media print {
+    header, .palette, .inspector, .canvas-toolbar, footer, .welcome-banner { display: none !important; }
+    main { grid-template-columns: 1fr !important; }
+    .canvas-container { overflow: visible !important; }
+    .canvas { background: white !important; background-image: none !important; min-height: auto !important; }
+  }
+</style>
+</head>
+<body>
+
+<!-- v7 — conexiones con z-index sobre nodos para evitar gap visual -->
+<header>
+  <div class="brand">
+    <div class="brand-icon">⚡</div>
+    <div>
+      <h1>Diseñador de Procesos IA</h1>
+      <p>Proyecto Integrador · Migración Panamá <span style="opacity:0.4;font-size:9px;margin-left:6px;">v7</span></p>
+    </div>
+  </div>
+  <div class="header-actions">
+    <button id="btn-templates" title="Cargar una plantilla de los desafíos">📋 Plantillas</button>
+    <button id="btn-new" title="Limpiar el lienzo">🆕 Nuevo</button>
+    <button id="btn-save" title="Guardar como archivo JSON">💾 Guardar</button>
+    <button id="btn-load" title="Cargar un archivo JSON">📂 Cargar</button>
+    <button id="btn-print" title="Imprimir o guardar como PDF">🖨️ Imprimir</button>
+    <button id="btn-help" title="Ayuda rápida">❓</button>
+  </div>
+</header>
+
+<div class="welcome-banner" id="welcome-banner">
+  <div class="wb-text">
+    <h2>👋 ¡Bienvenido al lienzo del Proyecto Integrador!</h2>
+    <p>Arrastra elementos del panel izquierdo y conéctalos con flechas. Cada capacidad de IA es un nodo más del proceso, con su nombre, descripción y notas de riesgo. El lienzo se autoguarda en tu navegador.</p>
+  </div>
+  <button id="wb-templates">Ver plantillas de los 6 desafíos</button>
+  <button class="wb-close" id="wb-close" title="Cerrar">✕</button>
+</div>
+
+<main>
+  <!-- ========== LEFT PALETTE ========== -->
+  <aside class="palette">
+    <div class="panel-section">
+      <h2>🧩 Elementos del proceso</h2>
+      <p class="hint">Arrastra al lienzo · o hacé click para crear en el centro</p>
+      <div class="palette-grid" id="palette-process"></div>
+    </div>
+
+    <div class="panel-section">
+      <h2>🤖 Capacidades de IA / Automatización</h2>
+      <p class="hint">Cada capacidad es también un nodo del proceso</p>
+      <div class="palette-grid" id="palette-ai"></div>
+    </div>
+
+    <div class="panel-section">
+      <h2>💡 Recordatorios del proyecto</h2>
+      <ul class="tips">
+        <li>Usa <b>al menos 3 capacidades</b> de IA o automatización como nodos del flujo.</li>
+        <li>Marca con 👤 <b>Tarea humana</b> los puntos donde interviene una persona.</li>
+        <li>Para cada nodo IA, justifica <b>por qué</b> esa tecnología y no otra.</li>
+        <li>Completa el campo <b>Riesgos</b> de cada nodo con perspectiva de IA Responsable.</li>
+      </ul>
+    </div>
+  </aside>
+
+  <!-- ========== CANVAS ========== -->
+  <section class="canvas-container" id="canvas-container">
+    <div class="project-bar" id="project-bar">
+      <button class="project-toggle" id="project-toggle" title="Editar información del proyecto">
+        <span class="project-icon">📋</span>
+        <span class="project-toggle-label">Proyecto:</span>
+        <span class="project-name" id="project-name-display">Sin nombre</span>
+        <span class="project-toggle-icon" id="project-toggle-icon">▾</span>
+      </button>
+      <div class="project-fields" id="project-fields" hidden>
+        <div class="field">
+          <label>Nombre del proyecto</label>
+          <input type="text" id="project-name" placeholder="Ej: Sistema de priorización de solicitudes migratorias">
+        </div>
+        <div class="field">
+          <label>Descripción de alto nivel</label>
+          <textarea id="project-description" rows="2" placeholder="¿Qué hace el sistema a grandes rasgos? ¿Cuál es su objetivo principal?"></textarea>
+        </div>
+        <div class="field">
+          <label>Problemática que aborda</label>
+          <textarea id="project-problem" rows="2" placeholder="¿Qué problema concreto resuelve? ¿A quién beneficia? ¿Por qué importa?"></textarea>
+        </div>
+      </div>
+    </div>
+    <div class="canvas-toolbar">
+      <button id="btn-connect" title="Activar modo de conexión: clic en nodo origen, luego en destino">🔗 Conectar</button>
+      <button id="btn-delete" title="Eliminar el nodo o conexión seleccionado">🗑️ Eliminar selección</button>
+      <button id="btn-fit" title="Ajustar la vista para ver todo el diagrama">🎯 Ajustar</button>
+      <div class="spacer"></div>
+      <span class="status" id="status"><span class="dot"></span><span id="status-text">Listo</span></span>
+    </div>
+    <div class="canvas" id="canvas">
+      <svg class="connections-layer" id="connections-layer" pointer-events="none">
+        <defs>
+          <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="10" markerHeight="10" markerUnits="userSpaceOnUse" orient="auto">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="#64748b"/>
+          </marker>
+          <marker id="arrow-selected" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="10" markerHeight="10" markerUnits="userSpaceOnUse" orient="auto">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="#2563eb"/>
+          </marker>
+          <marker id="arrow-warning" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="10" markerHeight="10" markerUnits="userSpaceOnUse" orient="auto">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="#f59e0b"/>
+          </marker>
+        </defs>
+        <g id="connections-group"></g>
+      </svg>
+      <div class="nodes-layer" id="nodes-layer"></div>
+      <div class="empty-state" id="empty-state">
+        <div class="es-icon">🎨</div>
+        <h2>Comienza a diseñar tu proceso</h2>
+        <p>Arrastra elementos del panel izquierdo o usa una plantilla desde el menú superior</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== INSPECTOR ========== -->
+  <aside class="inspector" id="inspector">
+    <div class="inspector-empty" id="inspector-empty">
+      <div class="ie-icon">🎯</div>
+      <p><b>Selecciona un nodo</b><br>para editar su nombre,<br>descripción y riesgos.</p>
+    </div>
+    <div class="inspector-content" id="inspector-content" hidden></div>
+  </aside>
+</main>
+
+<footer>
+  <span class="indicator"><span class="dot"></span>Autoguardado activo</span>
+  <span>📊 <b id="node-count">0</b> nodos</span>
+  <span>➡️ <b id="connection-count">0</b> conexiones</span>
+  <span>🤖 <b id="ai-count">0</b> capacidades IA</span>
+  <span class="spacer"></span>
+  <span>🎓 Proyecto Integrador IA — Migración Panamá</span>
+</footer>
+
+<!-- Hidden file input for load -->
+<input type="file" id="file-input" accept=".json" style="display:none" />
+
+<!-- Modal: templates -->
+<div class="modal-overlay" id="modal-templates" hidden>
+  <div class="modal">
+    <div class="modal-header">
+      <h2>📋 Plantillas de los desafíos</h2>
+      <button class="close" data-close-modal>✕</button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:12px;color:var(--text-muted);margin-bottom:14px;">
+        Comienza con un punto de partida sugerido. Podrás modificar todo después.
+      </p>
+      <div class="template-grid" id="template-grid"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: help -->
+<div class="modal-overlay" id="modal-confirm" hidden>
+  <div class="modal" style="max-width:460px;">
+    <div class="modal-header">
+      <h2 id="confirm-title">¿Confirmar?</h2>
+      <button class="close" data-close-modal>✕</button>
+    </div>
+    <div class="modal-body">
+      <p id="confirm-message" style="font-size:13px;line-height:1.5;color:var(--text-muted);"></p>
+    </div>
+    <div class="modal-footer">
+      <button id="confirm-no">Cancelar</button>
+      <button class="primary" id="confirm-yes">Sí, continuar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-help" hidden>
+  <div class="modal">
+    <div class="modal-header">
+      <h2>❓ Ayuda rápida</h2>
+      <button class="close" data-close-modal>✕</button>
+    </div>
+    <div class="modal-body" style="font-size:13px;line-height:1.6;">
+      <h3 style="font-size:13px;margin-bottom:6px;">🏗️ Construir el proceso</h3>
+      <ol style="padding-left:20px;margin-bottom:16px;">
+        <li>Arrastra <b>Inicio</b> y <b>Fin</b> al lienzo.</li>
+        <li>Agrega los <b>pasos</b> de tu proceso entre ellos.</li>
+        <li>Usa <b>Decisión</b> cuando el flujo se bifurque según una condición.</li>
+        <li>Usa <b>Humano</b> en cada punto donde interviene una persona.</li>
+      </ol>
+
+      <h3 style="font-size:13px;margin-bottom:6px;">🔗 Conectar pasos</h3>
+      <p style="margin-bottom:16px;">Pulsa <b>Conectar</b>, luego haz clic en el nodo <i>origen</i> y después en el nodo <i>destino</i>. Pulsa <b>Esc</b> para salir del modo conexión.</p>
+
+      <h3 style="font-size:13px;margin-bottom:6px;">🤖 Capacidades de IA</h3>
+      <p style="margin-bottom:16px;">Cada capacidad (LLM, RAG, ML, OCR, etc.) es un <b>nodo más del proceso</b>. Arrástrala al lienzo y conéctala con flechas igual que cualquier otro elemento. Cada nodo IA viene con una descripción y notas de riesgo predeterminadas que podés editar.</p>
+
+      <h3 style="font-size:13px;margin-bottom:6px;">🛡️ IA Responsable</h3>
+      <p style="margin-bottom:16px;">Para cada nodo (proceso o IA), completá el campo <i>“Riesgos / Notas de IA Responsable”</i> en el panel derecho. Anotá sesgos, problemas de privacidad, explicabilidad, errores posibles, etc.</p>
+
+      <h3 style="font-size:13px;margin-bottom:6px;">💾 Guardar tu trabajo</h3>
+      <p>El lienzo se guarda automáticamente en tu navegador. Usa <b>Guardar</b> para descargar un archivo JSON que podrás cargar después o compartir con tu equipo.</p>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================================================
+   STATE
+   ============================================================ */
+const STATE = {
+  nodes: [],          // {id, type, x, y, label, description, riskNotes}
+  project: { name: '', description: '', problem: '' },  // metadata del proyecto
+  connections: [],    // {id, sourceId, targetId}
+  selectedNodeId: null,
+  selectedConnectionId: null,
+  connectMode: false,
+  connectSourceId: null,
+  nextNodeId: 1,
+  nextConnId: 1,
+};
+
+/* ============================================================
+   DATA: Node types
+   ------------------------------------------------------------
+   Two categories:
+     - "process" = Inicio, Fin, Decisión, Tarea humana
+     - "ai"      = capacidades de IA/Automatización como nodos
+                   de primera clase (con su nombre, descripción
+                   y notas de riesgo editables)
+   ============================================================ */
+const NODE_TYPES = {
+  /* ---- Proceso ---- */
+  start:    { label: 'Inicio',         icon: '▶️', typeLabel: 'INICIO',   category: 'process' },
+  end:      { label: 'Fin',            icon: '⏹️', typeLabel: 'FIN',      category: 'process' },
+  decision: { label: 'Decisión',       icon: '❓', typeLabel: 'DECISIÓN', category: 'process' },
+  human:    { label: 'Tarea humana',   icon: '👤', typeLabel: 'HUMANO',   category: 'process' },
+
+  /* ---- Capacidades IA / Automatización (cada una es un nodo del proceso) ---- */
+  llm: {
+    label: 'LLM / NLP', icon: '💬', typeLabel: 'CAPACIDAD IA', category: 'ai', color: '#2563eb',
+    defaultDesc: 'Modelo de lenguaje para entender y generar texto en lenguaje natural.',
+    defaultRisk: '¿Qué modelo y versión? ¿Con qué datos se entrenó? ¿Cómo se controlan alucinaciones y sesgos?',
+    detailsFields: [
+      { key: 'model',    label: 'Modelo utilizado',         type: 'text',     placeholder: 'Ej: GPT-4 Turbo, Claude 3.5 Sonnet, Llama 3 70B, modelo propio…' },
+      { key: 'input',    label: 'Información de entrada',   type: 'textarea', placeholder: '¿Qué datos / texto recibe el modelo? ¿De dónde vienen?' },
+      { key: 'prompt',   label: 'Prompt utilizado',         type: 'textarea', placeholder: 'Pegá el prompt completo o describí su estructura (system + user, few-shot, etc.)' },
+      { key: 'controls', label: 'Controles aplicados',      type: 'textarea', placeholder: 'Temperature, top_p, system prompt estricto, guardrails, validación de output, log de respuestas…' },
+    ],
+  },
+  prompt: {
+    label: 'Prompt Engineering', icon: '✏️', typeLabel: 'CAPACIDAD IA', category: 'ai', color: '#0891b2',
+    defaultDesc: 'Diseño y estructuración de prompts para controlar las respuestas del modelo.',
+    defaultRisk: '¿El prompt es claro y consistente? ¿Es resistente a instrucciones maliciosas del usuario?',
+    detailsFields: [
+      { key: 'technique',   label: 'Técnica de prompting',   type: 'text',     placeholder: 'Ej: few-shot, chain-of-thought, ReAct, role prompting…' },
+      { key: 'structure',   label: 'Estructura del prompt',  type: 'textarea', placeholder: 'Describí las secciones (rol, contexto, instrucciones, ejemplos, formato de salida…)' },
+      { key: 'iterations',  label: 'Iteraciones / evaluación',type: 'textarea', placeholder: '¿Cuántas versiones probaste? ¿Cómo evaluás que el prompt funciona?' },
+    ],
+  },
+  rag: {
+    label: 'RAG', icon: '📚', typeLabel: 'CAPACIDAD IA', category: 'ai', color: '#7c3aed',
+    defaultDesc: 'Búsqueda en una base documental + generación de respuesta con citas a la fuente.',
+    defaultRisk: '¿La base de conocimiento está actualizada y curada? ¿Podría recuperar datos sensibles o desactualizados?',
+    detailsFields: [
+      { key: 'source',      label: 'Fuente documental',        type: 'textarea', placeholder: '¿De dónde sale la información? (manuales, normativa, base interna…)' },
+      { key: 'indexing',    label: 'Indexación',                type: 'text',     placeholder: 'Ej: embeddings con text-embedding-3, chunking 500/50, vector store…' },
+      { key: 'retrieval',   label: 'Estrategia de retrieval',   type: 'textarea', placeholder: '¿Cómo busca? (top-k, MMR, hybrid search, re-ranking…)' },
+      { key: 'citations',   label: 'Citas / trazabilidad',     type: 'textarea', placeholder: '¿La respuesta incluye referencias a las fuentes recuperadas?' },
+    ],
+  },
+  ml: {
+    label: 'Machine Learning', icon: '📊', typeLabel: 'CAPACIDAD IA', category: 'ai', color: '#0d9488',
+    defaultDesc: 'Modelo entrenado con datos históricos para predecir, clasificar o agrupar.',
+    defaultRisk: '¿Con qué datos se entrenó? ¿Hay sesgos? ¿Qué tipo de errores comete? ¿Es explicable?',
+    detailsFields: [
+      { key: 'mlType',     label: 'Tipo de ML',                type: 'text',     placeholder: 'Regresión / Clasificación (binaria o multiclase) / Clustering / Series de tiempo' },
+      { key: 'target',     label: 'Variable objetivo',         type: 'text',     placeholder: '¿Qué está prediciendo o clasificando?' },
+      { key: 'training',   label: 'Datos de entrenamiento',   type: 'textarea', placeholder: '¿Con qué datos se entrenó? ¿Cuántos registros? ¿Cómo se limpiaron?' },
+      { key: 'metrics',    label: 'Métricas de evaluación',    type: 'textarea', placeholder: 'accuracy, precision, recall, F1, MAE, RMSE, AUC… y los valores obtenidos' },
+    ],
+  },
+  dl: {
+    label: 'Deep Learning', icon: '🧠', typeLabel: 'CAPACIDAD IA', category: 'ai', color: '#4f46e5',
+    defaultDesc: 'Red neuronal profunda para tareas complejas (visión, voz, texto).',
+    defaultRisk: 'Requiere grandes volúmenes de datos. Difícil de explicar. Riesgo de "caja negra".',
+    detailsFields: [
+      { key: 'arch',      label: 'Arquitectura',             type: 'text',     placeholder: 'Ej: CNN ResNet-50, Transformer BERT-base, RNN LSTM, U-Net…' },
+      { key: 'training',  label: 'Datos de entrenamiento',   type: 'textarea', placeholder: 'Volumen, fuente, aumentación, balanceo de clases…' },
+      { key: 'hparams',   label: 'Hiperparámetros',          type: 'textarea', placeholder: 'Learning rate, batch size, epochs, optimizer, función de pérdida…' },
+    ],
+  },
+  cv: {
+    label: 'Computer Vision', icon: '👁️', typeLabel: 'CAPACIDAD IA', category: 'ai', color: '#db2777',
+    defaultDesc: 'Análisis de imágenes y video: detección de objetos, clasificación visual, OCR visual, etc.',
+    defaultRisk: 'Rendimiento variable según iluminación, ángulos, calidad de imagen, sesgos del dataset.',
+    detailsFields: [
+      { key: 'task',       label: 'Tipo de análisis',         type: 'text',     placeholder: 'Detección de objetos / Clasificación de imagen / Segmentación / Reconocimiento facial…' },
+      { key: 'input',      label: 'Datos visuales de entrada', type: 'textarea', placeholder: '¿Qué tipo de imágenes? ¿Resolución? ¿Cantidad? ¿De dónde vienen?' },
+      { key: 'validation', label: 'Validación',                type: 'textarea', placeholder: '¿Cómo se valida el resultado? ¿Conjunto de test? ¿Revisión humana?' },
+    ],
+  },
+  ocr: {
+    label: 'OCR', icon: '🔤', typeLabel: 'CAPACIDAD IA', category: 'ai', color: '#d97706',
+    defaultDesc: 'Extracción de texto desde imágenes o PDFs escaneados.',
+    defaultRisk: 'Errores en documentos de baja calidad, manuscritos, sellos, idiomas no soportados.',
+    detailsFields: [
+      { key: 'docType',   label: 'Tipo de documento',        type: 'text',     placeholder: 'PDF escaneado, foto de celular, formulario impreso, manuscrito…' },
+      { key: 'languages', label: 'Idioma(s)',                type: 'text',     placeholder: 'Ej: español, inglés, multilingüe…' },
+      { key: 'preprocess',label: 'Preprocesamiento',         type: 'textarea', placeholder: 'Binarización, deskew, denoising, deskew, mejora de contraste…' },
+    ],
+  },
+  docintel: {
+    label: 'Document Intelligence', icon: '📑', typeLabel: 'CAPACIDAD IA', category: 'ai', color: '#ca8a04',
+    defaultDesc: 'Extracción estructurada de campos desde documentos (formularios, facturas, pasaportes, etc.).',
+    defaultRisk: 'Errores en campos poco comunes o formatos nuevos. Necesita validación humana para campos críticos.',
+    detailsFields: [
+      { key: 'schema',    label: 'Plantilla / schema',        type: 'textarea', placeholder: 'Lista de campos a extraer con su tipo (texto, número, fecha, tabla…)' },
+      { key: 'extraction',label: 'Validación de extracción',   type: 'textarea', placeholder: '¿Cómo se valida que cada campo se extrajo bien? ¿Reglas, confianza mínima, revisión humana?' },
+    ],
+  },
+  agents: {
+    label: 'Agentes IA', icon: '🧭', typeLabel: 'CAPACIDAD IA', category: 'ai', color: '#ea580c',
+    defaultDesc: 'Agente que planifica y ejecuta tareas usando herramientas (búsqueda, APIs, código) de forma autónoma.',
+    defaultRisk: 'Acciones no deseadas. Necesita límites claros, registro de acciones y supervisión humana.',
+    detailsFields: [
+      { key: 'tools',     label: 'Herramientas disponibles',  type: 'textarea', placeholder: '¿Qué herramientas puede invocar? (búsqueda web, API X, ejecutar código, leer archivos…)' },
+      { key: 'limits',    label: 'Límites de acción',         type: 'textarea', placeholder: '¿Qué NO puede hacer? ¿Requiere aprobación humana para acciones críticas?' },
+      { key: 'logging',   label: 'Trazabilidad',              type: 'textarea', placeholder: '¿Cómo se registran las acciones para auditoría?' },
+    ],
+  },
+  rpa: {
+    label: 'RPA', icon: '⚙️', typeLabel: 'CAPACIDAD IA', category: 'ai', color: '#475569',
+    defaultDesc: 'Automatización de tareas repetitivas mediante scripts sobre interfaces (sin IA).',
+    defaultRisk: 'Frágil ante cambios en la interfaz. No tiene comprensión semántica. Mantenimiento constante.',
+    detailsFields: [
+      { key: 'target',    label: 'Sistema / aplicación',     type: 'text',     placeholder: '¿Sobre qué sistema corre? (web, desktop, legacy…)' },
+      { key: 'steps',     label: 'Pasos automatizados',       type: 'textarea', placeholder: 'Describí brevemente la secuencia (login → descargar X → cargar Y → notificar…)' },
+    ],
+  },
+};
+
+const PROCESS_ORDER = ['start', 'end', 'decision', 'human'];
+const AI_ORDER = ['llm', 'prompt', 'rag', 'ml', 'dl', 'cv', 'ocr', 'docintel', 'agents', 'rpa'];
+
+/* ============================================================
+   DATA: AI capabilities — now handled inside NODE_TYPES
+   ============================================================ */
+
+/* ============================================================
+   DATA: Templates (basados en la guía)
+   ------------------------------------------------------------
+   Cada capacidad de IA es ahora un nodo propio del proceso.
+   ============================================================ */
+const TEMPLATES = {
+  vacio: {
+    name: 'Lienzo en blanco',
+    desc: 'Comienza desde cero.',
+    data: { nodes: [], connections: [] },
+  },
+  d1: {
+    name: '🛂 Desafío 1 · Procesamiento de documentos',
+    desc: 'Recepción de un documento → OCR → Computer Vision → Document Intelligence → LLM valida → Humano revisa.',
+    data: {
+      nodes: [
+        { type: 'start',    x: 60,   y: 280, label: 'Documento recibido' },
+        { type: 'human',    x: 240,  y: 280, label: 'Funcionario recibe el documento' },
+        { type: 'ocr',      x: 480,  y: 280, label: 'OCR — extraer texto' },
+        { type: 'cv',       x: 720,  y: 280, label: 'CV — analizar estructura' },
+        { type: 'docintel', x: 960,  y: 280, label: 'Document Intelligence — extraer campos' },
+        { type: 'llm',      x: 1200, y: 280, label: 'LLM — validar e identificar inconsistencias' },
+        { type: 'human',    x: 1450, y: 280, label: 'Revisión humana del documento', riskNotes: 'La decisión final sobre el documento es humana.' },
+        { type: 'end',      x: 1700, y: 280, label: 'Documento procesado' },
+      ],
+      connections: [
+        ['n1','n2'],['n2','n3'],['n3','n4'],['n4','n5'],['n5','n6'],['n6','n7'],['n7','n8'],
+      ],
+    },
+  },
+  d2: {
+    name: '👤 Desafío 2 · Asistente para funcionarios',
+    desc: 'Funcionario pregunta → LLM entiende → RAG busca documentación → LLM responde con citas → Humano valida.',
+    data: {
+      nodes: [
+        { type: 'human',  x: 60,   y: 280, label: 'Funcionario hace pregunta' },
+        { type: 'llm',    x: 260,  y: 280, label: 'LLM — entender la pregunta' },
+        { type: 'rag',    x: 500,  y: 280, label: 'RAG — buscar en documentación' },
+        { type: 'llm',    x: 760,  y: 280, label: 'LLM — generar respuesta con citas', riskNotes: 'Riesgo de alucinación: mitigar con citas verificables y temperatura baja.' },
+        { type: 'human',  x: 1030, y: 280, label: 'Funcionario valida la respuesta' },
+        { type: 'end',    x: 1280, y: 280, label: 'Consulta resuelta' },
+      ],
+      connections: [
+        ['n1','n2'],['n2','n3'],['n3','n4'],['n4','n5'],['n5','n6'],
+      ],
+    },
+  },
+  d3: {
+    name: '📊 Desafío 3 · Predicción y análisis con ML',
+    desc: 'Datos → ML limpia features → ML entrena → ML evalúa → Decisión: ¿re-entrenar o desplegar? → ML en producción → Humano decide.',
+    data: {
+      nodes: [
+        { type: 'start',    x: 60,   y: 280, label: 'Datos históricos disponibles' },
+        { type: 'ml',       x: 260,  y: 280, label: 'ML — limpieza y features' },
+        { type: 'ml',       x: 480,  y: 280, label: 'ML — entrenar (regresión/clasif/cluster)', riskNotes: 'Justificar por qué se eligió este tipo de ML.' },
+        { type: 'ml',       x: 700,  y: 280, label: 'ML — evaluar (métricas, errores)' },
+        { type: 'decision', x: 900,  y: 280, label: '¿Modelo aceptable?' },
+        { type: 'ml',       x: 900,  y: 100, label: 'ML — re-entrenar / ajustar' },
+        { type: 'ml',       x: 1120, y: 280, label: 'ML — predicción en producción' },
+        { type: 'human',    x: 1360, y: 280, label: 'Humano decide con la predicción' },
+        { type: 'end',      x: 1600, y: 280, label: 'Cierre del caso' },
+      ],
+      connections: [
+        ['n1','n2'],['n2','n3'],['n3','n4'],['n4','n5'],
+        ['n5','n6'],['n6','n3'],
+        ['n5','n7'],['n7','n8'],['n8','n9'],
+      ],
+    },
+  },
+  d4: {
+    name: '🚨 Desafío 4 · Priorización de casos',
+    desc: 'Solicitudes → ML clasifica → Decisión por prioridad → Bajo (flujo normal) / Medio (revisión) / Alto (especialista).',
+    data: {
+      nodes: [
+        { type: 'start',    x: 60,   y: 320, label: 'Solicitudes entrantes' },
+        { type: 'ml',       x: 260,  y: 320, label: 'ML — clasificar solicitudes', riskNotes: 'Analizar cuidadosamente falsos positivos y falsos negativos.' },
+        { type: 'decision', x: 480,  y: 320, label: 'Nivel de prioridad' },
+        { type: 'human',    x: 700,  y: 120, label: 'Bajo → Flujo normal' },
+        { type: 'human',    x: 700,  y: 320, label: 'Medio → Revisión adicional' },
+        { type: 'human',    x: 700,  y: 520, label: 'Alto → Revisión especializada' },
+        { type: 'llm',      x: 960,  y: 520, label: 'LLM — explicar motivo (opcional)' },
+        { type: 'end',      x: 1200, y: 320, label: 'Caso cerrado' },
+      ],
+      connections: [
+        ['n1','n2'],['n2','n3'],
+        ['n3','n4'],['n3','n5'],['n3','n6'],
+        ['n6','n7'],['n7','n8'],
+        ['n4','n8'],['n5','n8'],
+      ],
+    },
+  },
+  d5: {
+    name: '🗄️ Desafío 5 · Asistente + predicción para DBAs',
+    desc: 'DBA consulta o llega métrica → RAG sobre runbooks → LLM responde → ML predice riesgo → DBA decide.',
+    data: {
+      nodes: [
+        { type: 'human',  x: 60,   y: 280, label: 'DBA hace consulta / llega métrica' },
+        { type: 'rag',    x: 280,  y: 280, label: 'RAG — buscar en runbooks' },
+        { type: 'llm',    x: 520,  y: 280, label: 'LLM — generar respuesta' },
+        { type: 'ml',     x: 760,  y: 280, label: 'ML — predecir capacidad / riesgo' },
+        { type: 'human',  x: 1000, y: 280, label: 'DBA revisa y decide' },
+        { type: 'end',    x: 1240, y: 280, label: 'Acción ejecutada' },
+      ],
+      connections: [
+        ['n1','n2'],['n2','n3'],['n3','n4'],['n4','n5'],['n5','n6'],
+      ],
+    },
+  },
+  d6: {
+    name: '🛡️ Desafío 6 · Detección de accesos anómalos',
+    desc: 'Logs → ML detecta anomalías → Decisión por riesgo → Bajo (registro) / Medio (diferida) / Alto (bloqueo + explicación).',
+    data: {
+      nodes: [
+        { type: 'start',    x: 60,   y: 320, label: 'Logs de acceso / eventos' },
+        { type: 'ml',       x: 260,  y: 320, label: 'ML — detección de anomalías', riskNotes: '¿Qué es más crítico: falsos positivos (fatiga de alertas) o falsos negativos (brechas no detectadas)?' },
+        { type: 'decision', x: 480,  y: 320, label: 'Nivel de riesgo' },
+        { type: 'human',    x: 700,  y: 120, label: 'Bajo → Solo registro' },
+        { type: 'human',    x: 700,  y: 320, label: 'Medio → Revisión diferida' },
+        { type: 'human',    x: 700,  y: 520, label: 'Alto → Alerta + bloqueo temporal' },
+        { type: 'llm',      x: 960,  y: 520, label: 'LLM — explicar el hallazgo' },
+        { type: 'human',    x: 1200, y: 520, label: 'Analista decide' },
+        { type: 'decision', x: 1430, y: 520, label: '¿Cerrar / Escalar / Bloquear?' },
+        { type: 'end',      x: 1430, y: 320, label: 'Caso cerrado' },
+      ],
+      connections: [
+        ['n1','n2'],['n2','n3'],
+        ['n3','n4'],['n3','n5'],['n3','n6'],
+        ['n6','n7'],['n7','n8'],['n8','n9'],
+        ['n4','n10'],['n5','n10'],['n9','n10'],
+      ],
+    },
+  },
+};
+
+/* ============================================================
+   HELPERS
+   ============================================================ */
+const $ = sel => document.querySelector(sel);
+const $$ = sel => Array.from(document.querySelectorAll(sel));
+const canvas = $('#canvas');
+const nodesLayer = $('#nodes-layer');
+const connGroup = $('#connections-group');
+const inspectorEmpty = $('#inspector-empty');
+const inspectorContent = $('#inspector-content');
+
+function genNodeId() { return 'n' + (STATE.nextNodeId++); }
+function genConnId() { return 'c' + (STATE.nextConnId++); }
+
+function showToast(msg, type = '') {
+  const t = $('#toast');
+  t.textContent = msg;
+  t.className = 'toast show ' + type;
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+function escapeHtml(str) {
+  return String(str ?? '').replace(/[&<>"']/g, m => (
+    {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]
+  ));
+}
+
+/* ============================================================
+   RENDERING
+   ============================================================ */
+function renderPaletteShapes() {
+  const processContainer = $('#palette-process');
+  const aiContainer = $('#palette-ai');
+
+  const renderItem = (type) => {
+    const t = NODE_TYPES[type];
+    const isAI = t.category === 'ai';
+    return `
+      <div class="palette-item ${isAI ? 'palette-item--ai' : ''}" draggable="true" data-shape="${type}" title="Arrastrar al lienzo"
+           ${isAI ? `style="--ai-color:${t.color}"` : ''}>
+        <div class="pi-icon">${t.icon}</div>
+        <div class="pi-label">${t.label}</div>
+      </div>`;
+  };
+
+  processContainer.innerHTML = PROCESS_ORDER.map(renderItem).join('');
+  aiContainer.innerHTML = AI_ORDER.map(renderItem).join('');
+
+  $$('.palette-item').forEach(el => {
+    el.addEventListener('dragstart', e => {
+      e.dataTransfer.setData('text/x-shape', el.dataset.shape);
+      e.dataTransfer.effectAllowed = 'copy';
+    });
+    // Fallback: si el drag-and-drop no funciona (ej. file:// en Chrome con
+    // políticas estrictas), un click simple crea el nodo en el centro del lienzo.
+    el.addEventListener('click', () => {
+      addNodeAtCenter(el.dataset.shape);
+    });
+  });
+}
+
+/* Crea un nodo del tipo dado en el centro del viewport visible del lienzo */
+function addNodeAtCenter(shape) {
+  const t = NODE_TYPES[shape];
+  if (!t) return;
+  const id = genNodeId();
+  const container = $('#canvas-container');
+  // Posición default: centro del viewport visible del lienzo
+  const x = container.scrollLeft + Math.max(40, (container.clientWidth - 200) / 2);
+  const y = container.scrollTop + Math.max(40, (container.clientHeight - 100) / 2);
+  STATE.nodes.push({
+    id, type: shape,
+    x, y,
+    label: t.label,
+    description: '',
+    riskNotes: '',
+    details: {},
+  });
+  renderAll();
+  selectNode(id);
+  autosave();
+  showToast('Nodo creado: ' + t.label + ' (click)', 'success');
+}
+
+function renderTemplates() {
+  const grid = $('#template-grid');
+  grid.innerHTML = Object.entries(TEMPLATES).map(([key, tpl]) => `
+    <button class="template-card" data-template="${key}">
+      <h3>${escapeHtml(tpl.name)}</h3>
+      <p>${escapeHtml(tpl.desc)}</p>
+    </button>
+  `).join('');
+
+  grid.querySelectorAll('.template-card').forEach(el => {
+    el.addEventListener('click', () => {
+      loadTemplate(el.dataset.template);
+      closeModal('#modal-templates');
+    });
+  });
+}
+
+function renderNode(node) {
+  const t = NODE_TYPES[node.type];
+  return `
+    <div class="node__inner">
+      <div class="node__header">
+        <div class="node__icon">${t.icon}</div>
+        <div class="node__type-label">${t.typeLabel}</div>
+      </div>
+      <div class="node__label">${escapeHtml(node.label || t.label)}</div>
+    </div>`;
+}
+
+function renderAll() {
+  // Nodes
+  nodesLayer.innerHTML = STATE.nodes.map(n => {
+    const w = (n.type === 'start' || n.type === 'end') ? 110 : (n.type === 'decision' ? 90 : null);
+    const h = (n.type === 'start' || n.type === 'end') ? 110 : (n.type === 'decision' ? 90 : null);
+    const styleSize = (w && h) ? `width:${w}px;height:${h}px;` : '';
+    return `
+      <div class="node node--${n.type} ${STATE.selectedNodeId === n.id ? 'selected' : ''} ${STATE.connectSourceId === n.id ? 'connect-source' : ''}"
+           data-id="${n.id}"
+           style="left:${n.x}px;top:${n.y}px;${styleSize}">
+        ${renderNode(n)}
+      </div>`;
+  }).join('');
+
+  // Connections
+  renderConnections();
+
+  // Empty state
+  $('#empty-state').hidden = STATE.nodes.length > 0;
+
+  // Footer counters
+  $('#node-count').textContent = STATE.nodes.length;
+  $('#connection-count').textContent = STATE.connections.length;
+  const aiCount = STATE.nodes.filter(n => NODE_TYPES[n.type]?.category === 'ai').length;
+  $('#ai-count').textContent = aiCount;
+
+  // Wire node events
+  attachNodeEvents();
+}
+
+function getNodeEl(id) { return nodesLayer.querySelector(`.node[data-id="${id}"]`); }
+
+function getNodeSize(node) {
+  if (node.type === 'start' || node.type === 'end') return { w: 110, h: 110 };
+  if (node.type === 'decision') return { w: 90, h: 90 };
+  // Para nodos con tamaño variable (AI capabilities, humanos), usar el tamaño
+  // REAL del elemento renderizado, no un valor hardcodeado. Si el nodo no está
+  // aún en el DOM, caer al default.
+  const el = getNodeEl(node.id);
+  if (el && el.offsetWidth && el.offsetHeight) {
+    return { w: el.offsetWidth, h: el.offsetHeight };
+  }
+  return { w: node.width || 190, h: node.height || 90 };
+}
+
+/* Returns the visible cardinal points of a node (in LOCAL coords relative to node.x, node.y).
+   These are the points where connection lines should attach — the actual visible edge
+   of the rendered shape, not the bounding box. Important for rotated shapes like
+   the diamond (decision), where the visible corners stick out of the bbox. */
+function getCardinalPoints(node) {
+  if (node.type === 'start' || node.type === 'end') {
+    // Circle (110x110): cardinal points are at the bbox edges
+    return {
+      top:    { x: 55,  y: 0   },
+      right:  { x: 110, y: 55  },
+      bottom: { x: 55,  y: 110 },
+      left:   { x: 0,   y: 55  },
+    };
+  }
+  if (node.type === 'decision') {
+    // 90x90 square rotated 45°: corners sit at distance w/2=45 from center.
+    // In LOCAL coords (relative to the bbox top-left), the corners are at:
+    //   top    = (45, -18)    (18 ABOVE the bbox top, where 18 = 45(√2-1))
+    //   right  = (108, 45)    (18 to the RIGHT of the bbox right)
+    //   bottom = (45, 108)    (18 BELOW the bbox bottom)
+    //   left   = (-18, 45)    (18 to the LEFT of the bbox left)
+    return {
+      top:    { x: 45,  y: -18 },
+      right:  { x: 108, y: 45  },
+      bottom: { x: 45,  y: 108 },
+      left:   { x: -18, y: 45  },
+    };
+  }
+  // Rectangle (task, human, document, ai, data): cardinal points on the bbox
+  // Usar el tamaño REAL del nodo renderizado, no un valor hardcodeado, para
+  // que las flechas arranquen exactamente en el borde visible.
+  const sz = getNodeSize(node);
+  const w = sz.w, h = sz.h;
+  return {
+    top:    { x: w/2, y: 0   },
+    right:  { x: w,   y: h/2 },
+    bottom: { x: w/2, y: h   },
+    left:   { x: 0,   y: h/2 },
+  };
+}
+
+function getConnectionPoints(source, target) {
+  const sc = getCardinalPoints(source);
+  const tc = getCardinalPoints(target);
+  const ss = getNodeSize(source);
+  const ts = getNodeSize(target);
+  const sx = source.x + ss.w / 2, sy = source.y + ss.h / 2;
+  const tx = target.x + ts.w / 2, ty = target.y + ts.h / 2;
+  const dx = tx - sx, dy = ty - sy;
+  const horizontal = Math.abs(dx) > Math.abs(dy);
+
+  const sourceCard = horizontal
+    ? (dx > 0 ? sc.right : sc.left)
+    : (dy > 0 ? sc.bottom : sc.top);
+  const targetCard = horizontal
+    ? (dx > 0 ? tc.left : tc.right)
+    : (dy > 0 ? tc.top : tc.bottom);
+
+  return {
+    sPoint: { x: source.x + sourceCard.x, y: source.y + sourceCard.y },
+    tPoint: { x: target.x + targetCard.x, y: target.y + targetCard.y },
+  };
+}
+
+function buildConnectionPath(sPoint, tPoint) {
+  const dx = tPoint.x - sPoint.x;
+  const dy = tPoint.y - sPoint.y;
+  const horizontal = Math.abs(dx) > Math.abs(dy);
+  if (horizontal) {
+    const cp1x = sPoint.x + dx * 0.5;
+    const cp2x = tPoint.x - dx * 0.5;
+    return `M ${sPoint.x} ${sPoint.y} C ${cp1x} ${sPoint.y}, ${cp2x} ${tPoint.y}, ${tPoint.x} ${tPoint.y}`;
+  } else {
+    const cp1y = sPoint.y + dy * 0.5;
+    const cp2y = tPoint.y - dy * 0.5;
+    return `M ${sPoint.x} ${sPoint.y} C ${sPoint.x} ${cp1y}, ${tPoint.x} ${cp2y}, ${tPoint.x} ${tPoint.y}`;
+  }
+}
+
+function renderConnections() {
+  connGroup.innerHTML = STATE.connections.map(c => {
+    const s = STATE.nodes.find(n => n.id === c.sourceId);
+    const t = STATE.nodes.find(n => n.id === c.targetId);
+    if (!s || !t) return '';
+    const { sPoint, tPoint } = getConnectionPoints(s, t);
+    const d = buildConnectionPath(sPoint, tPoint);
+    const selected = STATE.selectedConnectionId === c.id;
+    const color = selected ? '#2563eb' : '#64748b';
+    return `
+      <g data-connection-id="${c.id}">
+        <path class="connection-hit" d="${d}"/>
+        <path d="${d}" fill="none" stroke="${color}" stroke-width="2" marker-end="url(#arrow${selected ? '-selected' : ''})"/>
+      </g>`;
+  }).join('');
+
+  connGroup.querySelectorAll('g[data-connection-id]').forEach(g => {
+    g.addEventListener('click', e => {
+      e.stopPropagation();
+      selectConnection(g.dataset.connectionId);
+    });
+  });
+}
+
+/* ============================================================
+   INSPECTOR
+   ============================================================ */
+function renderInspector() {
+  const node = STATE.nodes.find(n => n.id === STATE.selectedNodeId);
+  if (!node) {
+    inspectorEmpty.hidden = false;
+    inspectorContent.hidden = true;
+    return;
+  }
+  inspectorEmpty.hidden = true;
+  inspectorContent.hidden = false;
+
+  const t = NODE_TYPES[node.type];
+  const isHuman = node.type === 'human';
+  const isAI = t.category === 'ai';
+
+  inspectorContent.innerHTML = `
+    <div class="ie-header">
+      <div class="ie-header-icon"${isAI ? ` style="background:${t.color}1a;color:${t.color}"` : ''}>${t.icon}</div>
+      <div class="ie-header-text">
+        <h3>${t.label}</h3>
+        <p>ID: ${node.id} · ${isAI ? 'Capacidad IA' : 'Elemento del proceso'}</p>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Etiqueta / Nombre del paso</label>
+      <input type="text" id="ins-label" value="${escapeHtml(node.label || '')}" placeholder="Ej: Revisar documento">
+    </div>
+
+    <div class="field">
+      <label>Descripción</label>
+      <textarea id="ins-description" placeholder="${escapeHtml(t.defaultDesc || '¿Qué ocurre en este paso?')}">${escapeHtml(node.description || '')}</textarea>
+    </div>
+
+    ${isAI && t.detailsFields && t.detailsFields.length ? `
+      <div class="details-section">
+        <div class="details-header" style="color:${t.color}">
+          <span>🔧 Detalles técnicos</span>
+          <span class="details-hint">Preguntas que pide la guía</span>
+        </div>
+        ${t.detailsFields.map(f => {
+          const val = (node.details || {})[f.key] || '';
+          if (f.type === 'textarea') {
+            return `
+              <div class="field details-field">
+                <label>${escapeHtml(f.label)}</label>
+                <textarea data-detail="${f.key}" placeholder="${escapeHtml(f.placeholder || '')}">${escapeHtml(val)}</textarea>
+              </div>`;
+          }
+          return `
+            <div class="field details-field">
+              <label>${escapeHtml(f.label)}</label>
+              <input type="text" data-detail="${f.key}" value="${escapeHtml(val)}" placeholder="${escapeHtml(f.placeholder || '')}">
+            </div>`;
+        }).join('')}
+      </div>
+    ` : ''}
+
+    <div class="field">
+      <label>Riesgos / Notas de IA Responsable</label>
+      <textarea id="ins-risk" placeholder="${escapeHtml(t.defaultRisk || 'Sesgos, privacidad, errores posibles, explicabilidad...')}">${escapeHtml(node.riskNotes || '')}</textarea>
+    </div>
+
+    ${isHuman ? `
+      <div class="info-box human">
+        <b>👤 Human-in-the-loop</b><br>
+        Definí claramente qué decisión queda bajo responsabilidad humana y por qué.
+      </div>` : ''}
+
+    ${isAI ? `
+      <div class="info-box" style="border-color:${t.color};background:${t.color}0d;color:${t.color};filter:saturate(2.5)">
+        <b>🤖 Capacidad de IA</b><br>
+        Este nodo representa una tecnología. Documentá: modelo o técnica, datos de entrada, qué produce y cómo se supervisa.
+      </div>` : ''}
+
+    ${node.type === 'decision' ? `
+      <div class="info-box warning">
+        <b>❓ Decisión</b><br>
+        Etiquetá las conexiones salientes describiendo la condición (Sí/No, cumple/no cumple, etc.).
+      </div>` : ''}
+
+    <div class="field" style="margin-top:18px;display:flex;gap:8px;">
+      <button class="danger" id="ins-delete" style="flex:1;">🗑️ Eliminar este nodo</button>
+    </div>
+  `;
+
+  // Wire events
+  $('#ins-label').addEventListener('input', e => {
+    node.label = e.target.value;
+    const el = getNodeEl(node.id);
+    if (el) el.querySelector('.node__label').textContent = node.label || NODE_TYPES[node.type].label;
+    autosave();
+  });
+  $('#ins-description').addEventListener('input', e => { node.description = e.target.value; autosave(); });
+  $('#ins-risk').addEventListener('input', e => { node.riskNotes = e.target.value; autosave(); });
+  $$('#inspector-content [data-detail]').forEach(input => {
+    input.addEventListener('input', e => {
+      const key = e.target.dataset.detail;
+      node.details = node.details || {};
+      node.details[key] = e.target.value;
+      autosave();
+    });
+  });
+  $('#ins-delete').addEventListener('click', () => {
+    deleteNode(node.id);
+  });
+}
+
+/* ============================================================
+   SELECTION
+   ============================================================ */
+function selectNode(id) {
+  STATE.selectedNodeId = id;
+  STATE.selectedConnectionId = null;
+  renderAll();
+  renderInspector();
+}
+
+function selectConnection(id) {
+  STATE.selectedNodeId = null;
+  STATE.selectedConnectionId = id;
+  renderAll();
+  renderInspector();
+  inspectorEmpty.hidden = true;
+  inspectorContent.hidden = false;
+  const conn = STATE.connections.find(c => c.id === id);
+  if (!conn) return;
+  const s = STATE.nodes.find(n => n.id === conn.sourceId);
+  const t = STATE.nodes.find(n => n.id === conn.targetId);
+  inspectorContent.innerHTML = `
+    <div class="ie-header">
+      <div class="ie-header-icon" style="background:#dbeafe;color:#1d4ed8;">🔗</div>
+      <div class="ie-header-text">
+        <h3>Conexión</h3>
+        <p>De "${escapeHtml(s?.label || '?')}" → "${escapeHtml(t?.label || '?')}"</p>
+      </div>
+    </div>
+    <div class="info-box">Las conexiones indican el orden del flujo. Si una decisión tiene varias salidas, etiquétalas en la descripción del nodo.</div>
+    <div class="field" style="margin-top:18px;">
+      <button class="danger" id="conn-delete" style="width:100%;">🗑️ Eliminar esta conexión</button>
+    </div>
+  `;
+  $('#conn-delete').addEventListener('click', () => deleteConnection(id));
+}
+
+function clearSelection() {
+  STATE.selectedNodeId = null;
+  STATE.selectedConnectionId = null;
+  renderAll();
+  renderInspector();
+}
+
+/* ============================================================
+   NODE EVENTS (drag, click)
+   ============================================================ */
+let dragState = null;
+
+function attachNodeEvents() {
+  $$('.node').forEach(el => {
+    const id = el.dataset.id;
+    el.addEventListener('mousedown', e => onNodeMouseDown(e, id));
+    el.addEventListener('click', e => {
+      e.stopPropagation();
+      if (STATE.connectMode) {
+        handleConnectClick(id);
+      } else {
+        selectNode(id);
+      }
+    });
+  });
+}
+
+function onNodeMouseDown(e, id) {
+  if (STATE.connectMode) return;
+  if (e.button !== 0) return;
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+  const node = STATE.nodes.find(n => n.id === id);
+  if (!node) return;
+  const el = getNodeEl(id);
+  if (!el) return;
+
+  const startX = e.clientX;
+  const startY = e.clientY;
+  const origX = node.x;
+  const origY = node.y;
+
+  dragState = { id, startX, startY, origX, origY, moved: false };
+  el.classList.add('dragging');
+  selectNode(id);
+
+  function onMove(ev) {
+    const dx = ev.clientX - dragState.startX;
+    const dy = ev.clientY - dragState.startY;
+    if (Math.abs(dx) + Math.abs(dy) > 3) dragState.moved = true;
+    const newX = Math.max(0, dragState.origX + dx);
+    const newY = Math.max(0, dragState.origY + dy);
+    node.x = newX;
+    node.y = newY;
+    el.style.left = newX + 'px';
+    el.style.top = newY + 'px';
+    renderConnections();
+  }
+  function onUp() {
+    el.classList.remove('dragging');
+    document.removeEventListener('mousemove', onMove);
+    document.removeEventListener('mouseup', onUp);
+    if (dragState.moved) autosave();
+    dragState = null;
+  }
+  document.addEventListener('mousemove', onMove);
+  document.addEventListener('mouseup', onUp);
+}
+
+/* ============================================================
+   CONNECT MODE
+   ============================================================ */
+function toggleConnectMode(force) {
+  STATE.connectMode = force ?? !STATE.connectMode;
+  STATE.connectSourceId = null;
+  canvas.classList.toggle('connect-mode', STATE.connectMode);
+  $('#btn-connect').classList.toggle('active', STATE.connectMode);
+  $('#status-text').textContent = STATE.connectMode
+    ? 'Modo conexión: clic en nodo origen y luego en destino'
+    : 'Listo';
+  $('#status').classList.toggle('connecting', STATE.connectMode);
+  renderAll();
+}
+
+function handleConnectClick(id) {
+  if (!STATE.connectSourceId) {
+    STATE.connectSourceId = id;
+    renderAll();
+    const node = STATE.nodes.find(n => n.id === id);
+    $('#status-text').textContent = `Origen: "${node.label || NODE_TYPES[node.type].label}". Ahora clic en el destino.`;
+  } else if (STATE.connectSourceId === id) {
+    // Clicking the same node cancels
+    STATE.connectSourceId = null;
+    renderAll();
+    $('#status-text').textContent = 'Modo conexión: clic en nodo origen y luego en destino';
+  } else {
+    // Check for duplicate
+    const exists = STATE.connections.find(c =>
+      c.sourceId === STATE.connectSourceId && c.targetId === id);
+    if (exists) {
+      showToast('Ya existe una conexión entre estos nodos', 'warning');
+      STATE.connectSourceId = null;
+      renderAll();
+      return;
+    }
+    STATE.connections.push({
+      id: genConnId(),
+      sourceId: STATE.connectSourceId,
+      targetId: id,
+    });
+    STATE.connectSourceId = null;
+    renderAll();
+    autosave();
+    $('#status-text').textContent = 'Conexión creada ✓';
+    setTimeout(() => { if (STATE.connectMode) $('#status-text').textContent = 'Modo conexión: clic en nodo origen y luego en destino'; }, 1500);
+  }
+}
+
+/* ============================================================
+   DRAG FROM PALETTE TO CANVAS
+   ============================================================ */
+/* ============================================================
+   DRAG & DROP from palette to canvas
+   Handlers are on canvas-container (the parent) so drops are
+   captured reliably regardless of which child the pointer is
+   actually over (e.g. the SVG connections layer on top).
+   ============================================================ */
+function getDropCoords(e) {
+  const rect = canvas.getBoundingClientRect();
+  return {
+    x: Math.max(20, e.clientX - rect.left + canvas.scrollLeft - 60),
+    y: Math.max(20, e.clientY - rect.top + canvas.scrollTop - 30),
+  };
+}
+
+const dropTarget = $('#canvas-container');
+
+dropTarget.addEventListener('dragover', e => {
+  if (e.dataTransfer.types.includes('text/x-shape')) {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'copy';
+  }
+});
+
+dropTarget.addEventListener('drop', e => {
+  const shape = e.dataTransfer.getData('text/x-shape');
+  if (!shape) return;
+  e.preventDefault();
+  const t = NODE_TYPES[shape];
+  if (!t) return;
+  const { x, y } = getDropCoords(e);
+  const id = genNodeId();
+  STATE.nodes.push({
+    id, type: shape,
+    x, y,
+    label: t.label,
+    description: t.defaultDesc || '',
+    riskNotes: t.defaultRisk || '',
+    details: {},
+  });
+  renderAll();
+  selectNode(id);
+  autosave();
+  showToast('Nodo creado: ' + t.label, 'success');
+});
+
+/* ============================================================
+   DELETE
+   ============================================================ */
+function deleteNode(id) {
+  STATE.nodes = STATE.nodes.filter(n => n.id !== id);
+  STATE.connections = STATE.connections.filter(c => c.sourceId !== id && c.targetId !== id);
+  if (STATE.selectedNodeId === id) STATE.selectedNodeId = null;
+  renderAll();
+  renderInspector();
+  autosave();
+  showToast('Nodo eliminado', '');
+}
+
+function deleteConnection(id) {
+  STATE.connections = STATE.connections.filter(c => c.id !== id);
+  if (STATE.selectedConnectionId === id) STATE.selectedConnectionId = null;
+  renderAll();
+  renderInspector();
+  autosave();
+}
+
+function deleteSelected() {
+  if (STATE.selectedNodeId) deleteNode(STATE.selectedNodeId);
+  else if (STATE.selectedConnectionId) deleteConnection(STATE.selectedConnectionId);
+}
+
+/* ============================================================
+   TEMPLATES
+   ============================================================ */
+function loadTemplate(key) {
+  const tpl = TEMPLATES[key];
+  if (!tpl) return;
+  const doLoad = () => {
+    const data = tpl.data;
+  STATE.nodes = [];
+  STATE.connections = [];
+  STATE.selectedNodeId = null;
+  STATE.selectedConnectionId = null;
+  STATE.nextNodeId = 1;
+  STATE.nextConnId = 1;
+
+  data.nodes.forEach(n => {
+    const id = genNodeId();
+    const t = NODE_TYPES[n.type];
+    STATE.nodes.push({
+      id,
+      type: n.type,
+      x: n.x, y: n.y,
+      label: n.label || (t ? t.label : n.type),
+      description: n.description || '',  // vacío: el placeholder muestra la sugerencia
+      riskNotes: n.riskNotes || '',      // vacío: el placeholder muestra la sugerencia
+      details: n.details || {},
+    });
+  });
+
+  data.connections.forEach(([s, t]) => {
+    STATE.connections.push({
+      id: genConnId(),
+      sourceId: s, targetId: t,
+    });
+  });
+
+  renderAll();
+  renderInspector();
+  autosave();
+  showToast('Plantilla cargada: ' + tpl.name, 'success');
+  };
+
+  if (STATE.nodes.length > 0) {
+    openConfirmModal(
+      '¿Reemplazar el contenido actual?',
+      `Vas a cargar <b>${escapeHtml(tpl.name)}</b>. El lienzo actual se reemplazará. Si quieres conservarlo, primero pulsa <b>Guardar</b> para descargar un JSON.`,
+      doLoad
+    );
+  } else {
+    doLoad();
+  }
+}
+
+/* ============================================================
+   SAVE / LOAD (autosave + JSON file)
+   ============================================================ */
+const STORAGE_KEY = 'bpm-ia-migracion-v1';
+
+function serialize() {
+  return {
+    version: 1,
+    savedAt: new Date().toISOString(),
+    nodes: STATE.nodes,
+    connections: STATE.connections,
+    nextNodeId: STATE.nextNodeId,
+    nextConnId: STATE.nextConnId,
+    project: STATE.project,
+  };
+}
+
+function deserialize(data) {
+  if (!data || !Array.isArray(data.nodes)) return false;
+  // Asegurar que cada nodo tenga details (compatibilidad con JSONs viejos)
+  STATE.nodes = data.nodes.map(n => ({ ...n, details: n.details || {} }));
+  STATE.connections = data.connections || [];
+  STATE.nextNodeId = data.nextNodeId || (data.nodes.length + 1);
+  STATE.nextConnId = data.nextConnId || (STATE.connections.length + 1);
+  STATE.selectedNodeId = null;
+  STATE.selectedConnectionId = null;
+  // Cargar info del proyecto (compatibilidad con JSONs viejos sin este campo)
+  STATE.project = data.project || { name: '', description: '', problem: '' };
+  if (window.__syncProjectBar) window.__syncProjectBar();
+  return true;
+}
+
+function autosave() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(serialize()));
+  } catch (e) { /* quota */ }
+}
+
+function loadFromStorage() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return false;
+    const data = JSON.parse(raw);
+    if (deserialize(data)) {
+      renderAll();
+      renderInspector();
+      return true;
+    }
+  } catch (e) {}
+  return false;
+}
+
+function saveToFile() {
+  const data = serialize();
+  const json = JSON.stringify(data, null, 2);
+  const blob = new Blob([json], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `proceso-ia-${new Date().toISOString().slice(0,10)}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast('Archivo JSON descargado ✓', 'success');
+}
+
+function loadFromFile() {
+  $('#file-input').click();
+}
+
+/* ============================================================
+   REPORT (Print / Save as PDF)
+   ------------------------------------------------------------
+   Abre una ventana nueva con el diagrama renderizado + la info
+   de todos los nodos (etiqueta, descripción, detalles técnicos,
+   riesgos). El usuario puede imprimir o "Guardar como PDF"
+   desde el diálogo del browser.
+   ============================================================ */
+function generateReport() {
+  if (STATE.nodes.length === 0) {
+    showToast('No hay nodos para imprimir. Agregá al menos uno.', 'warning');
+    return;
+  }
+
+  // Calcular bounding box de todos los nodos
+  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+  STATE.nodes.forEach(n => {
+    const el = getNodeEl(n.id);
+    let sz;
+    if (el && el.offsetWidth) {
+      sz = { w: el.offsetWidth, h: el.offsetHeight };
+    } else if (n.type === 'start' || n.type === 'end') {
+      sz = { w: 110, h: 110 };
+    } else if (n.type === 'decision') {
+      sz = { w: 90, h: 90 };
+    } else {
+      sz = { w: 170, h: 71 };
+    }
+    minX = Math.min(minX, n.x);
+    minY = Math.min(minY, n.y);
+    maxX = Math.max(maxX, n.x + sz.w);
+    maxY = Math.max(maxY, n.y + sz.h);
+  });
+
+  const padding = 30;
+  const offsetX = -minX + padding;
+  const offsetY = -minY + padding;
+  const diagramWidth = (maxX - minX) + padding * 2;
+  const diagramHeight = (maxY - minY) + padding * 2;
+  const maxDiagramWidth = 900;
+  const scale = Math.min(1, maxDiagramWidth / diagramWidth);
+
+  // Renderizar las conexiones como SVG
+  const connectionsHTML = STATE.connections.map(c => {
+    const s = STATE.nodes.find(n => n.id === c.sourceId);
+    const t = STATE.nodes.find(n => n.id === c.targetId);
+    if (!s || !t) return '';
+    const { sPoint, tPoint } = getConnectionPoints(s, t);
+    const d = buildConnectionPath(sPoint, tPoint);
+    return `<path d="${d}" fill="none" stroke="#475569" stroke-width="2" marker-end="url(#rep-arrow)"/>`;
+  }).join('');
+
+  // Renderizar los nodos como HTML posicionado
+  const nodesHTML = STATE.nodes.map(n => {
+    const t = NODE_TYPES[n.type];
+    if (!t) return '';
+    const el = getNodeEl(n.id);
+    let sz;
+    if (el && el.offsetWidth) {
+      sz = { w: el.offsetWidth, h: el.offsetHeight };
+    } else if (n.type === 'start' || n.type === 'end') {
+      sz = { w: 110, h: 110 };
+    } else if (n.type === 'decision') {
+      sz = { w: 90, h: 90 };
+    } else {
+      sz = { w: 170, h: 71 };
+    }
+    const x = (n.x + offsetX) * scale;
+    const y = (n.y + offsetY) * scale;
+    const w = sz.w * scale;
+    const h = sz.h * scale;
+    const isAI = t.category === 'ai';
+    const borderColor = isAI ? t.color
+      : n.type === 'start' ? '#10b981'
+      : n.type === 'end' ? '#ef4444'
+      : n.type === 'decision' ? '#f59e0b'
+      : n.type === 'human' ? '#f97316'
+      : '#64748b';
+    const bgColor = isAI ? '#fff'
+      : n.type === 'start' ? '#d1fae5'
+      : n.type === 'end' ? '#fee2e2'
+      : n.type === 'decision' ? '#fef3c7'
+      : n.type === 'human' ? '#ffedd5'
+      : '#f8fafc';
+    const decisionTransform = n.type === 'decision' ? 'transform: rotate(45deg);' : '';
+    const decisionInnerTransform = n.type === 'decision' ? 'transform: rotate(-45deg);' : '';
+
+    return `
+      <div class="rep-node rep-node--${n.type}" style="left:${x}px; top:${y}px; width:${w}px; min-height:${h}px; border-color:${borderColor}; background:${bgColor}; ${decisionTransform} ${isAI ? `border-left: 3px solid ${borderColor}; padding-left: 6px;` : ''}">
+        <div class="rep-node-inner" style="${decisionInnerTransform} width:100%; display:flex; flex-direction:column; align-items:center; gap:1px;">
+          <div class="rep-node-icon">${t.icon}</div>
+          <div class="rep-node-type">${t.typeLabel}</div>
+          <div class="rep-node-label">${escapeHtml(n.label || t.label)}</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  // Renderizar la tabla de detalles
+  const tableRows = STATE.nodes.map(n => {
+    const t = NODE_TYPES[n.type];
+    if (!t) return '';
+    const details = (t.detailsFields || [])
+      .map(f => {
+        const val = (n.details || {})[f.key];
+        if (!val || !val.trim()) return null;
+        return `<div><strong>${escapeHtml(f.label)}:</strong> ${escapeHtml(val).replace(/\n/g, '<br>')}</div>`;
+      })
+      .filter(Boolean)
+      .join('') || '<em class="rep-empty">(sin diligenciar)</em>';
+
+    return `
+      <tr>
+        <td><span class="rep-type-icon">${t.icon}</span>${escapeHtml(t.label)}</td>
+        <td><strong>${escapeHtml(n.label || t.label)}</strong></td>
+        <td>${n.description && n.description.trim() ? escapeHtml(n.description).replace(/\n/g, '<br>') : '<em class="rep-empty">(sin diligenciar)</em>'}</td>
+        <td>${details}</td>
+        <td>${n.riskNotes && n.riskNotes.trim() ? `<span class="rep-risk">${escapeHtml(n.riskNotes).replace(/\n/g, '<br>')}</span>` : '<em class="rep-empty">(sin diligenciar)</em>'}</td>
+      </tr>
+    `;
+  }).join('');
+
+  const reportHTML = `<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Reporte — Proyecto Integrador IA</title>
+<style>
+  @page { size: A4 portrait; margin: 1.5cm; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    color: #1a202c; margin: 0; padding: 0; font-size: 10pt;
+  }
+  h1 { font-size: 18pt; margin: 0 0 2pt; color: #1a202c; }
+  .rep-subtitle { color: #64748b; font-size: 8.5pt; margin-bottom: 14pt; }
+  h2 { font-size: 12pt; margin: 14pt 0 6pt; padding-bottom: 3pt; border-bottom: 1.5pt solid #cbd5e1; }
+  .rep-meta { font-size: 8pt; color: #64748b; margin-bottom: 8pt; }
+  .rep-project {
+    background: #f1f5f9;
+    border-left: 3px solid #2563eb;
+    border-radius: 4pt;
+    padding: 10pt 14pt;
+    margin-bottom: 12pt;
+    page-break-inside: avoid;
+  }
+  .rep-project-field { font-size: 9pt; line-height: 1.5; margin-bottom: 4pt; }
+  .rep-project-field:last-child { margin-bottom: 0; }
+  .rep-diagram {
+    position: relative;
+    width: ${diagramWidth * scale}px;
+    height: ${diagramHeight * scale}px;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    background: #f8fafc;
+    margin: 0 auto 14pt;
+    page-break-inside: avoid;
+    overflow: hidden;
+  }
+  .rep-diagram svg { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+  .rep-node {
+    position: absolute;
+    border: 1.5px solid;
+    border-radius: 5px;
+    padding: 3px 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    line-height: 1.15;
+    overflow: hidden;
+  }
+  .rep-node--decision { align-items: center; justify-content: center; }
+  .rep-node-icon { font-size: 10pt; line-height: 1; margin-bottom: 1px; }
+  .rep-node-type { font-size: 4.5pt; color: #64748b; text-transform: uppercase; font-weight: 600; letter-spacing: 0.03em; }
+  .rep-node-label { font-weight: 600; font-size: 6.5pt; word-wrap: break-word; max-width: 100%; }
+  table { width: 100%; border-collapse: collapse; margin-top: 6pt; font-size: 7.5pt; }
+  th, td { border: 1px solid #e2e8f0; padding: 4pt 6pt; text-align: left; vertical-align: top; }
+  th { background: #f1f5f9; font-weight: 600; font-size: 6.5pt; text-transform: uppercase; letter-spacing: 0.04em; }
+  td { word-wrap: break-word; overflow-wrap: break-word; }
+  .rep-type-icon { display: inline-block; margin-right: 3pt; font-size: 10pt; }
+  .rep-empty { color: #94a3b8; font-style: italic; }
+  .rep-risk { color: #92400e; }
+  tr { page-break-inside: avoid; }
+  .rep-no-print {
+    position: fixed; top: 10pt; right: 10pt;
+    padding: 8pt 14pt; background: #2563eb; color: white;
+    border: none; border-radius: 6pt; cursor: pointer; font-size: 10pt; font-weight: 600;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15); z-index: 1000;
+  }
+  .rep-no-print:hover { background: #1d4ed8; }
+  @media print {
+    .rep-no-print { display: none; }
+    .rep-diagram { page-break-after: auto; }
+    h2 { page-break-after: avoid; }
+  }
+</style>
+</head>
+<body>
+<button class="rep-no-print" onclick="window.print()">🖨️ Imprimir / Guardar como PDF</button>
+
+<h1>${STATE.project.name ? escapeHtml(STATE.project.name) : 'Proyecto Integrador — IA aplicada a Migración Panamá'}</h1>
+<div class="rep-subtitle">${STATE.project.name ? 'Proyecto Integrador — IA aplicada a Migración Panamá' : ''}${STATE.project.name ? ' · ' : ''}Reporte del proceso · ${STATE.nodes.length} nodos · ${STATE.connections.length} conexiones · Generado el ${new Date().toLocaleString('es')}</div>
+
+${(STATE.project.name || STATE.project.description || STATE.project.problem) ? `
+<section class="rep-project">
+  <h2>Información del proyecto</h2>
+  ${STATE.project.name ? `<div class="rep-project-field"><strong>Nombre:</strong> ${escapeHtml(STATE.project.name)}</div>` : ''}
+  ${STATE.project.description ? `<div class="rep-project-field"><strong>Descripción:</strong> ${escapeHtml(STATE.project.description).replace(/\n/g, '<br>')}</div>` : ''}
+  ${STATE.project.problem ? `<div class="rep-project-field"><strong>Problemática que aborda:</strong> ${escapeHtml(STATE.project.problem).replace(/\n/g, '<br>')}</div>` : ''}
+</section>
+` : ''}
+
+<h2>${(STATE.project.name || STATE.project.description || STATE.project.problem) ? '2' : '1'}. Diagrama del proceso</h2>
+<div class="rep-diagram">
+  <svg viewBox="0 0 ${diagramWidth} ${diagramHeight}" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
+    <defs>
+      <marker id="rep-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+        <path d="M 0 0 L 10 5 L 0 10 z" fill="#475569"/>
+      </marker>
+    </defs>
+    ${connectionsHTML}
+  </svg>
+  ${nodesHTML}
+</div>
+
+<h2>${(STATE.project.name || STATE.project.description || STATE.project.problem) ? '3' : '2'}. Detalle de los nodos</h2>
+<table>
+  <thead>
+    <tr>
+      <th style="width:12%">Tipo</th>
+      <th style="width:14%">Etiqueta</th>
+      <th style="width:22%">Descripción</th>
+      <th style="width:30%">Detalles técnicos</th>
+      <th style="width:22%">Riesgos / IA Responsable</th>
+    </tr>
+  </thead>
+  <tbody>
+    ${tableRows}
+  </tbody>
+</table>
+
+</body>
+</html>`;
+
+  const reportWindow = window.open('', '_blank');
+  if (!reportWindow) {
+    showToast('El navegador bloqueó la ventana. Permití popups para este sitio y volvé a intentar.', 'danger');
+    return;
+  }
+  reportWindow.document.open();
+  reportWindow.document.write(reportHTML);
+  reportWindow.document.close();
+  showToast('Reporte generado. Apretá el botón azul o Ctrl+P para guardar como PDF.', 'success');
+}
+
+$('#file-input').addEventListener('change', e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      const data = JSON.parse(ev.target.result);
+      if (deserialize(data)) {
+        renderAll();
+        renderInspector();
+        autosave();
+        showToast('Proceso cargado ✓', 'success');
+      } else {
+        showToast('Archivo no válido', 'danger');
+      }
+    } catch (err) {
+      showToast('No se pudo leer el archivo', 'danger');
+    }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+});
+
+/* ============================================================
+   MODALS
+   ============================================================ */
+function openModal(sel) { $(sel).hidden = false; }
+function closeModal(sel) { $(sel).hidden = true; }
+
+$$('[data-close-modal]').forEach(b => b.addEventListener('click', e => {
+  e.target.closest('.modal-overlay').hidden = true;
+}));
+$$('.modal-overlay').forEach(o => {
+  o.addEventListener('click', e => {
+    if (e.target === o) o.hidden = true;
+  });
+});
+
+/* Confirm modal (replaces native confirm() for reliability) */
+let _confirmCallback = null;
+function openConfirmModal(title, message, onConfirm) {
+  $('#confirm-title').textContent = title;
+  $('#confirm-message').innerHTML = message;
+  _confirmCallback = onConfirm;
+  openModal('#modal-confirm');
+}
+$('#confirm-yes').addEventListener('click', () => {
+  closeModal('#modal-confirm');
+  if (_confirmCallback) { _confirmCallback(); _confirmCallback = null; }
+});
+$('#confirm-no').addEventListener('click', () => {
+  closeModal('#modal-confirm');
+  _confirmCallback = null;
+});
+
+/* Fit to view: scroll canvas to show all nodes */
+function fitToView() {
+  if (STATE.nodes.length === 0) {
+    const c = $('#canvas-container');
+    c.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
+    return;
+  }
+  const xs = STATE.nodes.map(n => n.x);
+  const ys = STATE.nodes.map(n => n.y);
+  const sizes = STATE.nodes.map(n => getNodeSize(n));
+  const minX = Math.min(...xs) - 40;
+  const minY = Math.min(...ys) - 40;
+  const maxX = Math.max(...xs.map((x, i) => x + sizes[i].w)) + 40;
+  const maxY = Math.max(...ys.map((y, i) => y + sizes[i].h)) + 40;
+  const c = $('#canvas-container');
+  const padding = 40;
+  const scrollX = Math.max(0, minX - padding);
+  const scrollY = Math.max(0, minY - padding);
+  c.scrollTo({ top: scrollY, left: scrollX, behavior: 'smooth' });
+  showToast('Vista ajustada ✓', 'success');
+}
+
+/* ============================================================
+   KEYBOARD
+   ============================================================ */
+document.addEventListener('keydown', e => {
+  const inField = ['INPUT', 'TEXTAREA'].includes(document.activeElement?.tagName);
+  if (e.key === 'Escape') {
+    if (STATE.connectMode) toggleConnectMode(false);
+    else clearSelection();
+    $$('.modal-overlay').forEach(m => m.hidden = true);
+  }
+  if (!inField) {
+    if ((e.key === 'Delete' || e.key === 'Backspace') && (STATE.selectedNodeId || STATE.selectedConnectionId)) {
+      e.preventDefault();
+      deleteSelected();
+    }
+  }
+});
+
+/* ============================================================
+   WIRE UI
+   ============================================================ */
+$('#btn-templates').addEventListener('click', () => openModal('#modal-templates'));
+$('#wb-templates').addEventListener('click', () => openModal('#modal-templates'));
+$('#wb-close').addEventListener('click', () => { $('#welcome-banner').style.display = 'none'; });
+$('#btn-new').addEventListener('click', () => {
+  if (STATE.nodes.length === 0) return;
+  openConfirmModal(
+    '¿Vaciar el lienzo?',
+    'Se eliminará todo el contenido actual. Si quieres conservarlo, pulsa primero <b>Guardar</b> para descargar un JSON.',
+    () => {
+      STATE.nodes = [];
+      STATE.connections = [];
+      STATE.selectedNodeId = null;
+      STATE.selectedConnectionId = null;
+      STATE.nextNodeId = 1;
+      STATE.nextConnId = 1;
+      renderAll();
+      renderInspector();
+      autosave();
+      showToast('Lienzo limpio', '');
+    }
+  );
+});
+$('#btn-save').addEventListener('click', saveToFile);
+$('#btn-load').addEventListener('click', loadFromFile);
+$('#btn-print').addEventListener('click', () => generateReport());
+$('#btn-help').addEventListener('click', () => openModal('#modal-help'));
+$('#btn-connect').addEventListener('click', () => toggleConnectMode());
+$('#btn-delete').addEventListener('click', deleteSelected);
+$('#btn-fit').addEventListener('click', fitToView);
+
+canvas.addEventListener('click', e => {
+  if (e.target === canvas || e.target.id === 'nodes-layer' || e.target === connGroup) {
+    if (!STATE.connectMode) clearSelection();
+  }
+});
+
+/* ============================================================
+   PROJECT INFO BAR
+   ------------------------------------------------------------
+   Sección colapsable arriba del canvas para info de alto nivel
+   del proyecto: nombre, descripción, problemática.
+   ============================================================ */
+function setupProjectBar() {
+  const fields = $('#project-fields');
+  const toggle = $('#project-toggle');
+  const toggleIcon = $('#project-toggle-icon');
+  const nameDisplay = $('#project-name-display');
+  const nameInput = $('#project-name');
+  const descInput = $('#project-description');
+  const problemInput = $('#project-problem');
+
+  function syncFromState() {
+    nameInput.value = STATE.project.name || '';
+    descInput.value = STATE.project.description || '';
+    problemInput.value = STATE.project.problem || '';
+    nameDisplay.textContent = STATE.project.name || 'Sin nombre';
+  }
+
+  toggle.addEventListener('click', () => {
+    const isOpen = !fields.hidden;
+    fields.hidden = isOpen;
+    toggle.setAttribute('aria-expanded', String(!isOpen));
+    toggleIcon.textContent = isOpen ? '▾' : '▴';
+  });
+
+  nameInput.addEventListener('input', e => {
+    STATE.project.name = e.target.value;
+    nameDisplay.textContent = e.target.value.trim() || 'Sin nombre';
+    autosave();
+  });
+  descInput.addEventListener('input', e => {
+    STATE.project.description = e.target.value;
+    autosave();
+  });
+  problemInput.addEventListener('input', e => {
+    STATE.project.problem = e.target.value;
+    autosave();
+  });
+
+  // Exponer para que otras funciones (loadTemplate, deserialize, etc.) puedan sincronizar
+  window.__syncProjectBar = syncFromState;
+}
+
+/* ============================================================
+   INIT
+   ============================================================ */
+renderPaletteShapes();
+renderTemplates();
+setupProjectBar();
+renderTemplates();
+const restored = loadFromStorage();
+renderAll();
+renderInspector();
+
+// Hide welcome banner if user has content
+if (restored && STATE.nodes.length > 0) {
+  $('#welcome-banner').style.display = 'none';
+}
+</script>
+</body>
+</html>
