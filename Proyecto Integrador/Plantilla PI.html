@@ -4,6 +4,9 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Diseñador de Procesos IA — Migración Panamá</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root {
     --bg: #f4f6fb;
@@ -27,6 +30,17 @@
     --human-soft: #ffedd5;
     --ai: #8b5cf6;
     --ai-soft: #ede9fe;
+
+    --node-ai-bg: #f3e8ff;
+    --node-ai-border: #c084fc;
+    --node-ai-text: #581c87;
+    --node-nonai-bg: #e0f2fe;
+    --node-nonai-border: #38bdf8;
+    --node-nonai-text: #0369a1;
+    --node-human-bg: #fff7ed;
+    --node-human-border: #fb923c;
+    --node-human-text: #9a3412;
+
     --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.06);
     --shadow: 0 1px 3px rgba(15, 23, 42, 0.08), 0 1px 2px rgba(15, 23, 42, 0.04);
     --shadow-lg: 0 10px 25px rgba(15, 23, 42, 0.1), 0 4px 10px rgba(15, 23, 42, 0.04);
@@ -34,11 +48,34 @@
     --radius-sm: 6px;
   }
 
+  body.theme-dark {
+    --bg: #030712;
+    --panel: #0f172a;
+    --panel-soft: #1e293b;
+    --border: #334155;
+    --border-strong: #475569;
+    --text: #f8fafc;
+    --text-muted: #cbd5e1;
+    --text-soft: #94a3b8;
+    --primary: #38bdf8;
+    --primary-soft: #1e293b;
+    --primary-dark: #60a5fa;
+    --node-ai-bg: #3b0764;
+    --node-ai-border: #a855f7;
+    --node-ai-text: #f3e8ff;
+    --node-nonai-bg: #0c4a6e;
+    --node-nonai-border: #0284c7;
+    --node-nonai-text: #e0f2fe;
+    --node-human-bg: #451a03;
+    --node-human-border: #f97316;
+    --node-human-text: #ffedd5;
+  }
+
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
   html, body { height: 100%; }
   body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Inter", Roboto, sans-serif;
+    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     background: var(--bg);
     color: var(--text);
     display: flex;
@@ -46,7 +83,32 @@
     overflow: hidden;
     font-size: 14px;
     line-height: 1.4;
+    transition: background .2s, color .2s;
   }
+
+  h1, h2, h3, .brand h1, .section-title, .panel-section h2 {
+    font-family: 'Outfit', system-ui, sans-serif;
+  }
+
+  .arch-legend {
+    display: inline-flex;
+    gap: 8px;
+    align-items: center;
+    font-size: 11px;
+    margin-left: 12px;
+  }
+  .arch-legend-item {
+    padding: 3px 10px;
+    border-radius: 14px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    white-space: nowrap;
+  }
+  .arch-legend-item.node-nonai { background: var(--node-nonai-bg); color: var(--node-nonai-text); border: 1px solid var(--node-nonai-border); }
+  .arch-legend-item.node-ai { background: var(--node-ai-bg); color: var(--node-ai-text); border: 1px solid var(--node-ai-border); }
+  .arch-legend-item.node-human { background: var(--node-human-bg); color: var(--node-human-text); border: 1px solid var(--node-human-border); }
 
   button {
     font: inherit;
@@ -412,8 +474,14 @@
   .node--end .node__type-label { color: #b91c1c; }
   .node--end .node__label { color: #7f1d1d; }
 
-  .node--task .node__icon { background: #e0e7ff; color: #3730a3; }
-  .node--task .node__type-label { color: #4338ca; }
+  .node--task {
+    background: var(--node-nonai-bg);
+    border-color: var(--node-nonai-border);
+    border-left-width: 5px;
+  }
+  .node--task .node__icon { background: var(--node-nonai-border); color: white; }
+  .node--task .node__type-label { color: var(--node-nonai-text); }
+  .node--task .node__label { color: var(--text); }
 
   .node--decision {
     min-width: 90px; min-height: 90px;
@@ -432,12 +500,12 @@
   .node--decision .node__label { color: #78350f; font-size: 10px; line-height: 1.15; }
 
   .node--human {
-    background: var(--human-soft);
-    border-color: var(--human);
+    background: var(--node-human-bg);
+    border-color: var(--node-human-border);
     border-width: 2.5px;
   }
-  .node--human .node__icon { background: var(--human); color: white; }
-  .node--human .node__type-label { color: #c2410c; }
+  .node--human .node__icon { background: var(--node-human-border); color: white; }
+  .node--human .node__type-label { color: var(--node-human-text); }
 
   /* Nodos de capacidad IA — se distinguen por su color de acento (borde izquierdo) */
   .node--llm, .node--prompt, .node--rag, .node--ml, .node--dl,
@@ -470,6 +538,42 @@
   .node--docintel .node__icon { background: #ca8a04; }
   .node--agents .node__icon   { background: #ea580c; }
   .node--rpa .node__icon      { background: #475569; }
+
+  /* Tema Oscuro UI */
+  body.theme-dark .node {
+    background: var(--panel);
+    color: var(--text);
+  }
+  body.theme-dark .node--llm, body.theme-dark .node--prompt, body.theme-dark .node--rag,
+  body.theme-dark .node--ml, body.theme-dark .node--dl, body.theme-dark .node--cv,
+  body.theme-dark .node--ocr, body.theme-dark .node--docintel, body.theme-dark .node--agents,
+  body.theme-dark .node--rpa {
+    background: var(--panel);
+  }
+  body.theme-dark header, body.theme-dark footer, body.theme-dark .palette,
+  body.theme-dark .inspector, body.theme-dark .canvas-toolbar, body.theme-dark .project-bar {
+    background: var(--panel);
+    color: var(--text);
+    border-color: var(--border);
+  }
+  body.theme-dark .canvas {
+    background-color: #090d16;
+    background-image: radial-gradient(circle, #334155 1px, transparent 1px);
+  }
+  body.theme-dark input, body.theme-dark textarea, body.theme-dark select {
+    background: var(--panel-soft);
+    color: var(--text);
+    border-color: var(--border-strong);
+  }
+  body.theme-dark .modal {
+    background: var(--panel);
+    color: var(--text);
+  }
+  body.theme-dark .template-card, body.theme-dark .palette-item {
+    background: var(--panel-soft);
+    color: var(--text);
+    border-color: var(--border);
+  }
 
   /* Connection preview line */
   .connection-preview {
@@ -729,6 +833,7 @@
     <button id="btn-save" title="Guardar como archivo JSON">💾 Guardar</button>
     <button id="btn-load" title="Cargar un archivo JSON">📂 Cargar</button>
     <button id="btn-print" title="Imprimir o guardar como PDF">🖨️ Imprimir</button>
+    <button id="btn-theme" onclick="toggleTheme()" title="Modo Oscuro / Alto Contraste">🌗 Contraste</button>
     <button id="btn-help" title="Ayuda rápida">❓</button>
   </div>
 </header>
@@ -746,14 +851,14 @@
   <!-- ========== LEFT PALETTE ========== -->
   <aside class="palette">
     <div class="panel-section">
-      <h2>🧩 Elementos del proceso</h2>
-      <p class="hint">Arrastra al lienzo · o hacé click para crear en el centro</p>
+      <h2>⚙️ Proceso Tradicional (No-IA) & Humano</h2>
+      <p class="hint">Arrastra al lienzo · o haz clic para crear en el centro</p>
       <div class="palette-grid" id="palette-process"></div>
     </div>
 
     <div class="panel-section">
       <h2>🤖 Capacidades de IA / Automatización</h2>
-      <p class="hint">Cada capacidad es también un nodo del proceso</p>
+      <p class="hint">Cada capacidad es un nodo interactivo del proceso</p>
       <div class="palette-grid" id="palette-ai"></div>
     </div>
 
@@ -796,6 +901,11 @@
       <button id="btn-connect" title="Activar modo de conexión: clic en nodo origen, luego en destino">🔗 Conectar</button>
       <button id="btn-delete" title="Eliminar el nodo o conexión seleccionado">🗑️ Eliminar selección</button>
       <button id="btn-fit" title="Ajustar la vista para ver todo el diagrama">🎯 Ajustar</button>
+      <div class="arch-legend">
+        <span class="arch-legend-item node-nonai">⚙️ Solución Tradicional (No-IA)</span>
+        <span class="arch-legend-item node-ai">🤖 Actividad de IA</span>
+        <span class="arch-legend-item node-human">👤 Supervisión Humana</span>
+      </div>
       <div class="spacer"></div>
       <span class="status" id="status"><span class="dot"></span><span id="status-text">Listo</span></span>
     </div>
@@ -936,11 +1046,12 @@ const STATE = {
                    y notas de riesgo editables)
    ============================================================ */
 const NODE_TYPES = {
-  /* ---- Proceso ---- */
-  start:    { label: 'Inicio',         icon: '▶️', typeLabel: 'INICIO',   category: 'process' },
-  end:      { label: 'Fin',            icon: '⏹️', typeLabel: 'FIN',      category: 'process' },
-  decision: { label: 'Decisión',       icon: '❓', typeLabel: 'DECISIÓN', category: 'process' },
-  human:    { label: 'Tarea humana',   icon: '👤', typeLabel: 'HUMANO',   category: 'process' },
+  /* ---- Proceso Tradicional (No-IA) & Humano ---- */
+  start:    { label: 'Inicio',         icon: '▶️', typeLabel: 'INICIO (NO-IA)',   category: 'process' },
+  task:     { label: 'Sistema / API',  icon: '⚙️', typeLabel: 'NO-IA / TRADICIONAL', category: 'process' },
+  decision: { label: 'Decisión',       icon: '❓', typeLabel: 'DECISIÓN (NO-IA)', category: 'process' },
+  human:    { label: 'Tarea humana',   icon: '👤', typeLabel: 'HUMANO (HitL)',   category: 'process' },
+  end:      { label: 'Fin',            icon: '⏹️', typeLabel: 'FIN (NO-IA)',      category: 'process' },
 
   /* ---- Capacidades IA / Automatización (cada una es un nodo del proceso) ---- */
   llm: {
@@ -1046,7 +1157,7 @@ const NODE_TYPES = {
   },
 };
 
-const PROCESS_ORDER = ['start', 'end', 'decision', 'human'];
+const PROCESS_ORDER = ['start', 'task', 'decision', 'human', 'end'];
 const AI_ORDER = ['llm', 'prompt', 'rag', 'ml', 'dl', 'cv', 'ocr', 'docintel', 'agents', 'rpa'];
 
 /* ============================================================
@@ -1212,6 +1323,12 @@ function escapeHtml(str) {
   return String(str ?? '').replace(/[&<>"']/g, m => (
     {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]
   ));
+}
+
+function toggleTheme(){
+  document.body.classList.toggle('theme-dark');
+  var btn = document.getElementById('btn-theme');
+  if(btn) btn.classList.toggle('active-mode');
 }
 
 /* ============================================================
@@ -2106,54 +2223,54 @@ function generateReport() {
     .rep-diagram { page-break-after: auto; }
     h2 { page-break-after: avoid; }
   }
-</style>
-</head>
+<\/style>
+<\/head>
 <body>
-<button class="rep-no-print" onclick="window.print()">🖨️ Imprimir / Guardar como PDF</button>
+<button class="rep-no-print" onclick="window.print()">🖨️ Imprimir / Guardar como PDF<\/button>
 
-<h1>${STATE.project.name ? escapeHtml(STATE.project.name) : 'Proyecto Integrador — IA aplicada a Migración Panamá'}</h1>
-<div class="rep-subtitle">${STATE.project.name ? 'Proyecto Integrador — IA aplicada a Migración Panamá' : ''}${STATE.project.name ? ' · ' : ''}Reporte del proceso · ${STATE.nodes.length} nodos · ${STATE.connections.length} conexiones · Generado el ${new Date().toLocaleString('es')}</div>
+<h1>${STATE.project.name ? escapeHtml(STATE.project.name) : 'Proyecto Integrador — IA aplicada a Migración Panamá'}<\/h1>
+<div class="rep-subtitle">${STATE.project.name ? 'Proyecto Integrador — IA aplicada a Migración Panamá' : ''}${STATE.project.name ? ' · ' : ''}Reporte del proceso · ${STATE.nodes.length} nodos · ${STATE.connections.length} conexiones · Generado el ${new Date().toLocaleString('es')}<\/div>
 
 ${(STATE.project.name || STATE.project.description || STATE.project.problem) ? `
 <section class="rep-project">
-  <h2>Información del proyecto</h2>
-  ${STATE.project.name ? `<div class="rep-project-field"><strong>Nombre:</strong> ${escapeHtml(STATE.project.name)}</div>` : ''}
-  ${STATE.project.description ? `<div class="rep-project-field"><strong>Descripción:</strong> ${escapeHtml(STATE.project.description).replace(/\n/g, '<br>')}</div>` : ''}
-  ${STATE.project.problem ? `<div class="rep-project-field"><strong>Problemática que aborda:</strong> ${escapeHtml(STATE.project.problem).replace(/\n/g, '<br>')}</div>` : ''}
-</section>
+  <h2>Información del proyecto<\/h2>
+  ${STATE.project.name ? `<div class="rep-project-field"><strong>Nombre:</strong> ${escapeHtml(STATE.project.name)}<\/div>` : ''}
+  ${STATE.project.description ? `<div class="rep-project-field"><strong>Descripción:</strong> ${escapeHtml(STATE.project.description).replace(/\n/g, '<br>')}<\/div>` : ''}
+  ${STATE.project.problem ? `<div class="rep-project-field"><strong>Problemática que aborda:</strong> ${escapeHtml(STATE.project.problem).replace(/\n/g, '<br>')}<\/div>` : ''}
+<\/section>
 ` : ''}
 
-<h2>${(STATE.project.name || STATE.project.description || STATE.project.problem) ? '2' : '1'}. Diagrama del proceso</h2>
+<h2>${(STATE.project.name || STATE.project.description || STATE.project.problem) ? '2' : '1'}. Diagrama del proceso<\/h2>
 <div class="rep-diagram">
   <svg viewBox="0 0 ${diagramWidth} ${diagramHeight}" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
     <defs>
       <marker id="rep-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
         <path d="M 0 0 L 10 5 L 0 10 z" fill="#475569"/>
-      </marker>
-    </defs>
+      <\/marker>
+    <\/defs>
     ${connectionsHTML}
-  </svg>
+  <\/svg>
   ${nodesHTML}
-</div>
+<\/div>
 
-<h2>${(STATE.project.name || STATE.project.description || STATE.project.problem) ? '3' : '2'}. Detalle de los nodos</h2>
+<h2>${(STATE.project.name || STATE.project.description || STATE.project.problem) ? '3' : '2'}. Detalle de los nodos<\/h2>
 <table>
   <thead>
     <tr>
-      <th style="width:12%">Tipo</th>
-      <th style="width:14%">Etiqueta</th>
-      <th style="width:22%">Descripción</th>
-      <th style="width:30%">Detalles técnicos</th>
-      <th style="width:22%">Riesgos / IA Responsable</th>
-    </tr>
-  </thead>
+      <th style="width:12%">Tipo<\/th>
+      <th style="width:14%">Etiqueta<\/th>
+      <th style="width:22%">Descripción<\/th>
+      <th style="width:30%">Detalles técnicos<\/th>
+      <th style="width:22%">Riesgos / IA Responsable<\/th>
+    <\/tr>
+  <\/thead>
   <tbody>
     ${tableRows}
-  </tbody>
-</table>
+  <\/tbody>
+<\/table>
 
-</body>
-</html>`;
+<\/body>
+<\/html>`;
 
   const reportWindow = window.open('', '_blank');
   if (!reportWindow) {
